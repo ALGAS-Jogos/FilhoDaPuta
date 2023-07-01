@@ -15,15 +15,19 @@ local cardW,cardH = 500,726
 local fazQuantas = 0
 
 local hub = noobhub.new({server="localhost", port="8181"})
-local localId = rng(1,99999)
+local localId = rng(10000,99999)
 local enemiesHand = {}
+local onStartMenu = true
+local waitingPlayers = false
+local whoTurn = localId
+local partyId = ""
+local totalPlayers = 1
 
 local font = love.graphics.newFont(18)
 
 function love.load()
     addCards()
-    --lookForGame()
-    enterGame(777)
+    --enterGame()
 end
 
 function love.update(dt)
@@ -32,27 +36,40 @@ end
 
 function love.draw()
     local screenw,screenh = love.graphics.getDimensions()
-    local spacing = 5
-    local offset = (screenw - (#playerCartas * cardW*cardSize + (#playerCartas - 1) * spacing)) / 2
-    if round==1 then
-        local x = offset + (0) * (cardW*cardSize + spacing)
-        love.graphics.draw(cardback,x,screenh-cardH*cardSize,0,cardSize)
+    if onStartMenu then
+        love.graphics.printf("Pressione N para criar uma sala!",font,0,screenh/2,screenw,"center")
+        love.graphics.printf("Ou digite aqui o id de uma sala e pressione enter: "..partyId,font,0,screenh/2+25,screenw,"center")
+    elseif waitingPlayers then
+        love.graphics.printf("ID da sua sala: "..tostring(partyId),font,0,screenh/2,screenw,"center")
+        love.graphics.printf("Pessoas na sala: "..tostring(totalPlayers),font,0,screenh/2+25,screenw,"center")
+        if partyId==tostring(localId) then 
+            love.graphics.printf("Pressione S para iniciar a partida!",font,0,screenh/2+50,screenw,"center") 
+        else
+            love.graphics.printf("Espere o dono da sala iniciar a partida!",font,0,screenh/2+50,screenw,"center")
+        end
     else
-        for k,v in ipairs(playerCartas) do
-            local x = offset + (k - 1) * (cardW*cardSize + spacing)
-            love.graphics.draw(v.img,x,screenh-cardH*cardSize,0,cardSize)
+        local spacing = 5
+        local offset = (screenw - (#playerCartas * cardW*cardSize + (#playerCartas - 1) * spacing)) / 2
+        if round==1 then
+            local x = offset + (0) * (cardW*cardSize + spacing)
+            love.graphics.draw(cardback,x,screenh-cardH*cardSize,0,cardSize)
+        else
+            for k,v in ipairs(playerCartas) do
+                local x = offset + (k - 1) * (cardW*cardSize + spacing)
+                love.graphics.draw(v.img,x,screenh-cardH*cardSize,0,cardSize)
+            end
         end
-    end
-    for k,value in ipairs(enemiesHand) do
-        for i,v in ipairs(value) do
-            local drawing = v.img
-            if round>1 then drawing=cardback end
-            local offset = (screenw - (#value * cardW*cardSize + (#value - 1) * spacing)) / 2
-            local x = offset + (i - 1) * (cardW*cardSize + spacing)
-            love.graphics.draw(drawing,x,0,0,cardSize)
+        for k,value in ipairs(enemiesHand) do
+            for i,v in ipairs(value) do
+                local drawing = v.img
+                if round>1 then drawing=cardback end
+                local offset = (screenw - (#value * cardW*cardSize + (#value - 1) * spacing)) / 2
+                local x = offset + (i - 1) * (cardW*cardSize + spacing)
+                love.graphics.draw(drawing,x,0,0,cardSize)
+            end
         end
+        love.graphics.printf("Faz: "..fazQuantas,font,0,screenh/2,screenw,"center")
     end
-    love.graphics.printf("Faz: "..fazQuantas,font,0,screenh/2,screenw,"center")
 end
 
 function addCards()
@@ -94,29 +111,68 @@ function love.mousepressed(x,y,btn)
 end
 
 function love.keypressed(key)
-    if key=="backspace" then
-        fazQuantas = fazQuantas-1
-        if fazQuantas<0 then fazQuantas=0 end
-    else
-        if key=="1" then
-            fazQuantas = 1
-        elseif key=="2" then
-            fazQuantas = 2
-        elseif key=="3" then
-            fazQuantas = 3
-        elseif key=="4" then
-            fazQuantas = 4
-        elseif key=="5" then
-            fazQuantas = 5
-        elseif key=="6" then
-            fazQuantas = 6
-        elseif key=="7" then
-            fazQuantas = 7
-        elseif key=="0" then
-            fazQuantas=0
+    if onStartMenu then
+        if key=="backspace" then
+            partyId = string.sub(partyId,1,#partyId-1)
+        else
+            if key=="1" then
+                partyId = partyId.."1"
+            elseif key=="2" then
+                partyId = partyId.."2"
+            elseif key=="3" then
+                partyId = partyId.."3"
+            elseif key=="4" then
+                partyId = partyId.."4"
+            elseif key=="5" then
+                partyId = partyId.."5"
+            elseif key=="6" then
+                partyId = partyId.."6"
+            elseif key=="7" then
+                partyId = partyId.."7"
+            elseif key=="8" then
+                partyId = partyId.."8"
+            elseif key=="9" then
+                partyId = partyId.."9"
+            elseif key=="0" then
+                partyId = partyId.."0"
+            end
         end
+        if key=="return" then
+            waitingPlayers=true
+            onStartMenu=false
+            enterGame(partyId)                        
+        end
+        if key=="n" then
+            waitingPlayers=true
+            onStartMenu=false
+            enterGame(tostring(localId))
+            partyId=tostring(localId)
+        end
+    else
+        if key=="backspace" then
+            fazQuantas = fazQuantas-1
+            if fazQuantas<0 then fazQuantas=0 end
+        else
+            if key=="1" then
+                fazQuantas = 1
+            elseif key=="2" then
+                fazQuantas = 2
+            elseif key=="3" then
+                fazQuantas = 3
+            elseif key=="4" then
+                fazQuantas = 4
+            elseif key=="5" then
+                fazQuantas = 5
+            elseif key=="6" then
+                fazQuantas = 6
+            elseif key=="7" then
+                fazQuantas = 7
+            elseif key=="0" then
+                fazQuantas = 0
+            end
+        end
+        if fazQuantas > #playerCartas then fazQuantas=#playerCartas end
     end
-    if fazQuantas > #playerCartas then fazQuantas=#playerCartas end
 end
 
 function newRound()
@@ -162,39 +218,18 @@ function enterGame(channel)
                 table.insert(enemiesHand,temptwo)
             end
             if message.action=="justjoined" then
-                showHand()
-                publish("sendhand",message.id)
-            end
-            if message.action=="sendhand" and message.content==localId then
-                showHand()
-            end
-        end
-    })
-    publish("justjoined",nil)
-end
-
-function lookForGame()
-    hub:subscribe({
-        channel = "queue",
-        callback = function(message)
-            if message.action=="newround" then
-                newRound()
-            end
-            if message.action=="myhand" then
-                local temp = json.decode(message.content)
-                local temptwo = {}
-                for k,v in ipairs(temp) do
-                    temptwo[k]={naipe=v.naipe,number=v.number,rank=v.rank,img=love.graphics.newImage(v.img)}
+                totalPlayers=totalPlayers+1
+                if message.content==tostring(localId) then
+                    publish("updatetotalplayers",totalPlayers)
                 end
-                enemyHand=temptwo
-            end
-            if message.action=="justjoined" then
-                showHand()
-                publish("sendhand",message.id)
             end
             if message.action=="sendhand" and message.content==localId then
                 showHand()
             end
+            if message.action=="updatetotalplayers" then
+                totalPlayers=message.content
+            end
         end
     })
+    publish("justjoined",partyId)
 end
