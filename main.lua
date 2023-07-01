@@ -9,10 +9,12 @@ local playerCartas = {}
 love.math.setRandomSeed(os.time()/2+1)
 local rng = love.math.random
 local round = 1
-local cardback=love.graphics.newImage("cards/xback.png")
+local cardback = love.graphics.newImage("cards/xback.png")
+local cardSize = 0.20
 
 local hub = noobhub.new({server="localhost", port="8181"})
-local localId=rng(1,99999)
+local localId = rng(1,99999)
+local enemyHand = {}
 
 function love.load()
     addCards()
@@ -25,11 +27,16 @@ end
 
 function love.draw()
     if round==1 then
-        love.graphics.draw(cardback,0,0,0,0.25)
+        love.graphics.draw(cardback,0,0,0,cardSize)
     else
         for k,v in ipairs(playerCartas) do
-            love.graphics.draw(v.img,(k-1)*(500/4+10),0,0,0.25)
-        end 
+            love.graphics.draw(v.img,(k-1)*(500/4+10),0,0,cardSize)
+        end
+    end
+    for k,v in ipairs(enemyHand) do
+        local drawing = v.img
+        if round>1 then drawing=cardback end
+        love.graphics.draw(drawing,(k-1)*(500/4+10),300,0,cardSize)
     end
 end
 
@@ -42,16 +49,46 @@ function addCards()
         for k,v in ipairs(alreadyThere) do
             if v.number==number and v.naipe==naipe then goto reroll end
         end
+        local rank = 0
+        for k,v in pairs(manilhas) do
+            if number==v.number and naipe==v.naipe then rank=v.rank end
+        end
+        if rank==0 then
+            for k,v in ipairs(ordem) do
+                if number==v.number then rank=v.rank end
+            end
+        end
         alreadyThere[i]={number=number,naipe=naipe}
-        playerCartas[i]={number=number,naipe=naipe,img=love.graphics.newImage("cards/"..number.."_of_"..naipe..".png")}
+        playerCartas[i]={number=number,naipe=naipe,rank=rank,img=love.graphics.newImage("cards/"..number.."_of_"..naipe..".png")}
     end
 end
 
-function love.mousepressed(btn)
-    publish("ping","turning around")
+function love.mousepressed(x,y,btn)
+    if btn==1 then
+        publish("newround",1)
+        newRound()
+    elseif btn==2 then
+        for k,v in pairs(enemyHand) do
+            print("Number: "..tostring(v.number).." Naipe: "..v.naipe.." Rank: "..tostring(v.rank))
+        end
+    else
+        showHand()
+    end
+end
+
+function newRound()
     round=round+1
     playerCartas={}
     addCards()
+    showHand()
+end
+
+function showHand()
+    local temp = {}
+    for k,v in ipairs(playerCartas) do
+        temp[k]={number=v.number,naipe=v.naipe,rank=v.rank,img="cards/"..v.number.."_of_"..v.naipe..".png"}
+    end
+    publish("myhand",json.encode(temp))
 end
 
 function publish(action,content)    
@@ -70,8 +107,25 @@ function enterGame(channel)
     hub:subscribe({
         channel = channel,
         callback = function(message)
-            if message.action=="ping" then publish("pong","we made it"..tostring(localId)) end
-            if message.action=="pong" then print(message.content) end
+            if message.action=="newround" then
+                newRound()
+            end
+            if message.action=="myhand" then
+                local temp = json.decode(message.content)
+                local temptwo = {}
+                for k,v in ipairs(temp) do
+                    temptwo[k]={naipe=v.naipe,number=v.number,rank=v.rank,img=love.graphics.newImage(v.img)}
+                end
+                enemyHand=temptwo
+            end
+            if message.action=="justjoined" then
+                showHand()
+                publish("sendhand",message.id)
+            end
+            if message.action=="sendhand" and message.content==localId then
+                showHand()
+            end
         end
     })
+    publish("justjoined",nil)
 end
