@@ -19,7 +19,9 @@ local localId = rng(10000,99999)
 local enemiesHand = {}
 local onStartMenu = true
 local waitingPlayers = false
+local myTurn = false
 local whoTurn = localId
+local whoDealer = localId
 local partyId = ""
 local totalPlayers = 1
 
@@ -47,6 +49,7 @@ function love.draw()
         else
             love.graphics.printf("Espere o dono da sala iniciar a partida!",font,0,screenh/2+50,screenw,"center")
         end
+        love.graphics.printf("Pressione Esc para sair dessa sala!",font,0,screenh-50,screenw,"center") 
     else
         local spacing = 5
         local offset = (screenw - (#playerCartas * cardW*cardSize + (#playerCartas - 1) * spacing)) / 2
@@ -148,6 +151,16 @@ function love.keypressed(key)
             enterGame(tostring(localId))
             partyId=tostring(localId)
         end
+    elseif waitingPlayers then
+        if key=="escape" then
+            waitingPlayers=false
+            onStartMenu=true
+            leaveGame()
+        end
+        if key=="s" and partyId==tostring(localId) then
+            waitingPlayers=false
+            publish("startgame")
+        end
     else
         if key=="backspace" then
             fazQuantas = fazQuantas-1
@@ -229,7 +242,17 @@ function enterGame(channel)
             if message.action=="updatetotalplayers" then
                 totalPlayers=message.content
             end
+            if message.action=="whoturn" and tostring(message.id)==partyId then
+                whoTurn = message.content
+            end
+            if message.action=="whodealer" and tostring(message.id)==partyId then
+                whoDealer = message.content
+            end
         end
     })
     publish("justjoined",partyId)
+end
+
+function leaveGame()
+    hub:unsubscribe()
 end
