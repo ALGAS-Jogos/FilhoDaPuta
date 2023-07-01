@@ -10,15 +10,20 @@ love.math.setRandomSeed(os.time()/2+1)
 local rng = love.math.random
 local round = 1
 local cardback = love.graphics.newImage("cards/xback.png")
-local cardSize = 0.20
+local cardSize = 0.18
+local cardW,cardH = 500,726
+local fazQuantas = 0
 
 local hub = noobhub.new({server="localhost", port="8181"})
 local localId = rng(1,99999)
-local enemyHand = {}
+local enemiesHand = {}
+
+local font = love.graphics.newFont(18)
 
 function love.load()
     addCards()
-    enterGame(345)
+    --lookForGame()
+    enterGame(777)
 end
 
 function love.update(dt)
@@ -26,23 +31,37 @@ function love.update(dt)
 end
 
 function love.draw()
+    local screenw,screenh = love.graphics.getDimensions()
+    local spacing = 5
+    local offset = (screenw - (#playerCartas * cardW*cardSize + (#playerCartas - 1) * spacing)) / 2
     if round==1 then
-        love.graphics.draw(cardback,0,0,0,cardSize)
+        local x = offset + (0) * (cardW*cardSize + spacing)
+        love.graphics.draw(cardback,x,screenh-cardH*cardSize,0,cardSize)
     else
         for k,v in ipairs(playerCartas) do
-            love.graphics.draw(v.img,(k-1)*(500/4+10),0,0,cardSize)
+            local x = offset + (k - 1) * (cardW*cardSize + spacing)
+            love.graphics.draw(v.img,x,screenh-cardH*cardSize,0,cardSize)
         end
     end
-    for k,v in ipairs(enemyHand) do
-        local drawing = v.img
-        if round>1 then drawing=cardback end
-        love.graphics.draw(drawing,(k-1)*(500/4+10),300,0,cardSize)
+    for k,value in ipairs(enemiesHand) do
+        for i,v in ipairs(value) do
+            local drawing = v.img
+            if round>1 then drawing=cardback end
+            local offset = (screenw - (#value * cardW*cardSize + (#value - 1) * spacing)) / 2
+            local x = offset + (i - 1) * (cardW*cardSize + spacing)
+            love.graphics.draw(drawing,x,0,0,cardSize)
+        end
     end
+    love.graphics.printf("Faz: "..fazQuantas,font,0,screenh/2,screenw,"center")
 end
 
 function addCards()
     local alreadyThere = {}
-    for i=1,round do
+    local totalCards = round
+    if round>7 then
+        totalCards=7
+    end
+    for i=1,totalCards do
         ::reroll::
         local number = cartas[rng(1,#cartas)]
         local naipe = naipes[rng(1,#naipes)]
@@ -65,15 +84,39 @@ end
 
 function love.mousepressed(x,y,btn)
     if btn==1 then
+
+    elseif btn==2 then
         publish("newround",1)
         newRound()
-    elseif btn==2 then
-        for k,v in pairs(enemyHand) do
-            print("Number: "..tostring(v.number).." Naipe: "..v.naipe.." Rank: "..tostring(v.rank))
-        end
     else
-        showHand()
+        
     end
+end
+
+function love.keypressed(key)
+    if key=="backspace" then
+        fazQuantas = fazQuantas-1
+        if fazQuantas<0 then fazQuantas=0 end
+    else
+        if key=="1" then
+            fazQuantas = 1
+        elseif key=="2" then
+            fazQuantas = 2
+        elseif key=="3" then
+            fazQuantas = 3
+        elseif key=="4" then
+            fazQuantas = 4
+        elseif key=="5" then
+            fazQuantas = 5
+        elseif key=="6" then
+            fazQuantas = 6
+        elseif key=="7" then
+            fazQuantas = 7
+        elseif key=="0" then
+            fazQuantas=0
+        end
+    end
+    if fazQuantas > #playerCartas then fazQuantas=#playerCartas end
 end
 
 function newRound()
@@ -116,7 +159,7 @@ function enterGame(channel)
                 for k,v in ipairs(temp) do
                     temptwo[k]={naipe=v.naipe,number=v.number,rank=v.rank,img=love.graphics.newImage(v.img)}
                 end
-                enemyHand=temptwo
+                table.insert(enemiesHand,temptwo)
             end
             if message.action=="justjoined" then
                 showHand()
@@ -128,4 +171,30 @@ function enterGame(channel)
         end
     })
     publish("justjoined",nil)
+end
+
+function lookForGame()
+    hub:subscribe({
+        channel = "queue",
+        callback = function(message)
+            if message.action=="newround" then
+                newRound()
+            end
+            if message.action=="myhand" then
+                local temp = json.decode(message.content)
+                local temptwo = {}
+                for k,v in ipairs(temp) do
+                    temptwo[k]={naipe=v.naipe,number=v.number,rank=v.rank,img=love.graphics.newImage(v.img)}
+                end
+                enemyHand=temptwo
+            end
+            if message.action=="justjoined" then
+                showHand()
+                publish("sendhand",message.id)
+            end
+            if message.action=="sendhand" and message.content==localId then
+                showHand()
+            end
+        end
+    })
 end

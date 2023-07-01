@@ -3,3 +3,5 @@
 - [ ] Add support for more than 2 players
 - [ ] Add queue
 - [ ] Find friends to play with
+- [ ] Make Fullscreen
+- [ ] Make the game actually playable
