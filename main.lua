@@ -20,6 +20,9 @@ local hub = noobhub.new({server="localhost", port="8181"})
 local localId = rng(10000,99999)
 local gotEnd = false
 local enemiesHand = {}
+local playedCards = {}
+local whoPlayed = 0
+local whoConfirmed = 0
 local players = {}
 players[1] = localId
 local onStartMenu = true
@@ -28,6 +31,7 @@ local myTurn = false
 local whoTurn = localId
 local whoDealer = localId
 local betTime = true
+local confirmTime = false
 local totalBet = 0
 local wrongbet = false
 local partyId = ""
@@ -42,6 +46,12 @@ end
 
 function love.update(dt)
     hub:enterFrame()
+    if partyId==tostring(localId) then
+        if betTime==false then
+            checkHowManyPlayed()
+            checkHowManyConfirmed()
+        end
+    end
 end
 
 function love.draw()
@@ -60,7 +70,7 @@ function love.draw()
     else
         local spacing = 5
         local offset = (screenw - (#playerCartas * cardW*cardSize + (#playerCartas - 1) * spacing)) / 2
-        if round==1 then
+        if round==1 and #playerCartas==1 then
             local x = offset + (0) * (cardW*cardSize + spacing)
             love.graphics.draw(cardback,x,screenh-cardH*cardSize,0,cardSize)
         else
@@ -77,7 +87,18 @@ function love.draw()
                 local x = offset + (i - 1) * (cardW*cardSize + spacing)
                 love.graphics.draw(drawing,x,0,0,cardSize)
             end
-            love.graphics.printf(value.id,font,offset,cardH*cardSize+5,screenw,"left")            
+            if #value.cards>0 then
+                love.graphics.printf(value.id,font,offset,cardH*cardSize+5,screenw,"left")   
+            end         
+        end
+        for k,value in ipairs(playedCards) do
+            local offset = 50+k*cardW*cardSize+spacing*k--(screenw - (#value.cards * cardW*cardSize + (#value.cards - 1) * spacing)) / 2
+            local drawing = value.img
+            --print("playedCards: "..value.number)
+            --local x = offset * (cardW*cardSize + spacing)
+            love.graphics.draw(drawing,offset,screenh/2-(cardH*cardSize/2)+10,0,cardSize)            
+            --love.graphics.draw(drawing,0,0,0,cardSize)            
+            love.graphics.printf(value.id,font,offset,screenh/2-(cardH*cardSize/2)-10,screenw,"left")              
         end
         if whoTurn==localId then 
             if betTime then 
@@ -89,7 +110,12 @@ function love.draw()
                     end
                 end
             end
-            love.graphics.printf("Seu turno!",font,0,screenh/2-20,screenw,"center")
+            if #playerCartas>0 then
+                love.graphics.printf("Seu turno!",font,0,screenh/2-20,screenw,"center")            
+            end
+        end
+        if #playerCartas==0 and confirmTime then
+            love.graphics.printf("Pressione S para confirmar e prosseguir!",font,0,screenh-20,screenw,"center") 
         end
     end
 end
@@ -101,6 +127,9 @@ function addCards()
         totalCards=7
     end
     for i=1,totalCards do
+        local spacing = 5
+        local offset = (screenw - (totalCards * cardW*cardSize + (totalCards - 1) * spacing)) / 2
+        local x = offset + (i - 1) * (cardW*cardSize + spacing)
         ::reroll::
         local number = cartas[rng(1,#cartas)]
         local naipe = naipes[rng(1,#naipes)]
@@ -118,29 +147,24 @@ function addCards()
         end
         alreadyThere[i]={number=number,naipe=naipe}
         playerCartas[i]={number=number,naipe=naipe,rank=rank,img=love.graphics.newImage("cards/"..number.."_of_"..naipe..".png")}
-    end
-    local spacing = 5
-    local offset = (screenw - (#playerCartas * cardW*cardSize + (#playerCartas - 1) * spacing)) / 2
-    if round==1 then
-        local x = offset + (0) * (cardW*cardSize + spacing)
-        table.insert(playerCartasRect,{x=x,y=screenh-cardH*cardSize,w=cardW*cardSize,h=cardH*cardSize})
-    else
-        for k,v in ipairs(playerCartas) do
-            local x = offset + (k - 1) * (cardW*cardSize + spacing)
-            table.insert(playerCartasRect,{x=x,y=screenh-cardH*cardSize,w=cardW*cardSize,h=cardH*cardSize})
-        end
+        playerCartasRect[i]={x=x,y=screenh-cardH*cardSize,w=cardW*cardSize,h=cardH*cardSize}
     end
 end
 
 function love.mousepressed(x,y,btn)
     if btn==1 then
-        if betTime==false then
+        if betTime==false and whoTurn==localId then
             for i, carta in ipairs(playerCartasRect) do
                 if x >= carta.x and x <= carta.x + carta.w and y >= carta.y and y <= carta.y + carta.h then
                     -- Carta clicada!
-                    publish("playcard",i)
-                    playerCartas[i] = nil
-                    playerCartasRect[i] = nil
+                    local v = playerCartas[i]
+                    local temp = {number=v.number,naipe=v.naipe,rank=v.rank,img="cards/"..v.number.."_of_"..v.naipe..".png",index=i}
+                    publish("playcard",json.encode(temp))
+                    v["id"] = localId
+                    table.insert(playedCards,v)
+                    table.remove(playerCartas,i)
+                    table.remove(playerCartasRect,i)
+                    whoPlayed=whoPlayed+1
                     break -- Saia do loop, já que encontramos a carta clicada
                 end
             end
@@ -203,11 +227,8 @@ function love.keypressed(key)
             waitingPlayers=false
             publish("startgame")
             publish("whodealer",localId)
-            changeTurn()
+            changeTurn(true)
             showHand()
-            for i,v in ipairs(players) do
-                print("player"..i..": "..v)
-            end
         end
     elseif betTime then
         if whoDealer==localId and fazQuantas+totalBet==#playerCartas then wrongbet=true end
@@ -238,6 +259,11 @@ function love.keypressed(key)
         wrongbet=false
         if fazQuantas > #playerCartas then fazQuantas=#playerCartas end
         if whoDealer==localId and fazQuantas+totalBet==#playerCartas then wrongbet=true end
+    elseif confirmTime then
+        if key=="s" then
+            publish("confirm",true)
+            confirmTime=false
+        end
     end
 end
 
@@ -252,29 +278,29 @@ end
 function sendBet()
     publish("bet",fazQuantas)
     if partyId==tostring(localId) then
-        changeTurn()
+        changeTurn(false)
     end
 end
 
-function changeTurn()
-    publish("whoturn",getNext(players,whoTurn))
-    whoTurn=getNext(players,whoTurn)
-    print(whoTurn)
-    print(whoDealer)
-    print(gotEnd)
-    if gotEnd==true and whoTurn==getNext(players,whoDealer) then
-        if betTime==true then
-            publish("bettime",false)
-            betTime=false
-        else
-            publish("newround",1)
-            newRound()
-            betTime=true
-            publish("bettime",true)
+function changeTurn(inicio)
+    if inicio==false then
+        publish("whoturn",getNext(players,whoTurn))
+        whoTurn=getNext(players,whoTurn)
+        if gotEnd==true and whoTurn==getNext(players,whoDealer) then
+            if betTime==true then
+                publish("bettime",false)
+                betTime=false
+            else
+                betTime=true
+                publish("bettime",true)
+            end
+            gotEnd=false
         end
-        gotEnd=false
+        if whoTurn==whoDealer then gotEnd = true end
+    else
+        publish("whoturn",getNext(players,whoDealer))
+        whoTurn=getNext(players,whoDealer)
     end
-    if whoTurn==whoDealer then gotEnd = true end
 end
 
 function showHand()
@@ -283,6 +309,28 @@ function showHand()
         temp[k]={number=v.number,naipe=v.naipe,rank=v.rank,img="cards/"..v.number.."_of_"..v.naipe..".png"}
     end
     publish("myhand",json.encode(temp))
+end
+
+function checkHowManyPlayed()
+    if #enemiesHand+1==whoPlayed then
+        publish("confirmtime",true)
+        whoPlayed=0
+        confirmTime=true
+    end
+end
+
+function checkHowManyConfirmed()
+    if whoConfirmed==#enemiesHand+1 then
+        local nextDealer = getNext(players,whoDealer)
+        publish("whodealer",nextDealer)
+        whoDealer=nextDealer
+        publish("confirmtime",false)
+        changeTurn(true)
+        showHand()
+        publish("newround",1)
+        newRound()
+        whoConfirmed=0
+    end
 end
 
 function publish(action,content)    
@@ -336,15 +384,34 @@ function enterGame(channel)
             end
             if message.action=="bet" then
                 if partyId==tostring(localId) then
-                    changeTurn()
+                    changeTurn(false)
                 end
                 totalBet=totalBet+message.content
             end
             if message.action=="bettime" and tostring(message.id)==partyId then
                 betTime=message.content
             end
+            if message.action=="confirmtime" and tostring(message.id)==partyId then
+                confirmTime=message.content
+            end
             if message.action=="playcard" then
-                
+                whoPlayed=whoPlayed+1
+                local v = json.decode(message.content)
+                print("PLAYCARD DEBUG: "..v.img)
+                local image = love.graphics.newImage(v.img)
+                local temp = {id=message.id,naipe=v.naipe,number=v.number,rank=v.rank,img=image,index=v.index}
+                table.insert(playedCards,temp)
+                for k,value in ipairs(enemiesHand) do
+                    if value.id==message.id then
+                        table.remove(value.cards,v.index)
+                    end
+                end
+                if partyId==tostring(localId) then
+                    changeTurn(false)
+                end
+            end
+            if message.action=="confirm" and partyId==tostring(localId) then
+                whoConfirmed=whoConfirmed+1
             end
         end
     })
@@ -367,9 +434,26 @@ function getNext(list,content)
 
     if index then
         if index+1>#list then index=0 end
-        print("GETNEXT: index: "..(index+1).." size: "..#list)
         return list[index+1]
     else
         return nil -- Item atual não encontrado na lista
+    end
+end
+
+function getIndexPerId(list,id)
+    for i = 1,#list do
+        if list[i].id==id then
+            return i
+        end
+    end
+end
+
+function getTableById(list,id)
+    for i = 1,#list do
+        if list[i].id then
+            if list[i].id==id then
+                return list[i]
+            end
+        end
     end
 end
