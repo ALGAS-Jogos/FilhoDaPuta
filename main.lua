@@ -10,8 +10,10 @@ local playerCartasRect = {}
 love.math.setRandomSeed(os.time()/2+1)
 local rng = love.math.random
 local round = 1
+local roundsWon = 0
+local roundBet = 0
 local cardback = love.graphics.newImage("cards/xback.png")
-local cardSize = 0.18
+local cardSize = 0.15
 local cardW,cardH = 500,726
 local screenw,screenh = love.graphics.getDimensions()
 local fazQuantas = 0
@@ -237,6 +239,7 @@ function love.keypressed(key)
             if fazQuantas<0 then fazQuantas=0 end
         elseif key=="return" and wrongbet==false then
             sendBet()
+            roundBet=fazQuantas
         else
             if key=="1" then
                 fazQuantas = 1
@@ -273,6 +276,10 @@ function newRound()
     enemiesHand = {}
     addCards()
     showHand()
+end
+
+function clearTable()
+    playedCards = {}
 end
 
 function sendBet()
@@ -312,11 +319,41 @@ function showHand()
 end
 
 function checkHowManyPlayed()
-    if #enemiesHand+1==whoPlayed then
+    if #enemiesHand+1==whoPlayed and #playerCartas==0 then
+        whoWon()
         publish("confirmtime",true)
         whoPlayed=0
         confirmTime=true
     end
+    if #enemiesHand+1==whoPlayed and #playerCartas>0 then
+        whoPlayed=0
+        --check who won
+        whoWon()
+        clearTable()
+    end
+end
+
+function whoWon()
+    local idRanks = table.sort(playedCards, compararPorRank)
+    local winnerId = idRanks[1].id
+    local melou = false
+    local melouRank = idRanks[1]
+    for k,v in ipairs(idRanks) do -- 3 3 4 4 5
+        if k>1 then
+            if melou then
+               melouRank = v.rank 
+               melou=false
+               winnerId=v.id            
+            elseif v.rank==melouRank and melou==false then
+                melou=true
+            end
+        end
+    end
+    publish("winner",winnerId)
+end
+
+local function compararPorRank(a, b)
+    return a.rank < b.rank
 end
 
 function checkHowManyConfirmed()
@@ -329,6 +366,7 @@ function checkHowManyConfirmed()
         showHand()
         publish("newround",1)
         newRound()
+        clearTable()
         whoConfirmed=0
     end
 end
@@ -351,6 +389,7 @@ function enterGame(channel)
         callback = function(message)
             if message.action=="newround" then
                 newRound()
+                clearTable()
                 fazQuantas=0                
             end
             if message.action=="myhand" then
@@ -412,6 +451,11 @@ function enterGame(channel)
             end
             if message.action=="confirm" and partyId==tostring(localId) then
                 whoConfirmed=whoConfirmed+1
+            end
+            if message.action=="winner" then
+                if message.content==localId then
+                    roundsWon=roundsWon+1
+                end
             end
         end
     })
