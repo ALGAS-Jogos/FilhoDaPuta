@@ -1,6 +1,8 @@
 require("utils.noobhub")
 require("utils.json")
 
+love.graphics.setDefaultFilter("nearest")
+
 local naipes = {"clubs","diamonds","hearts","spades"}
 local cartas = {"ace",2,3,4,5,6,7,"jack","queen","king"}
 local manilhas = {zap={number=4,naipe="clubs",rank=1},setecopa={number=7,naipe="hearts",rank=2},espadilha={number="ace",naipe="spades",rank=3},seteouro={number=7,naipe="diamonds",rank=4}}
@@ -12,6 +14,7 @@ local rng = love.math.random
 local round = 1
 local roundsWon = 0
 local roundBet = 0
+local vidas = 3
 local cardback = love.graphics.newImage("cards/xback.png")
 local cardSize = 0.15
 local cardW,cardH = 500,726
@@ -80,7 +83,11 @@ function love.draw()
                 local x = offset + (k - 1) * (cardW*cardSize + spacing)
                 love.graphics.draw(v.img,x,screenh-cardH*cardSize,0,cardSize)
             end
-        end
+        end    
+        love.graphics.printf("Partidas Vencidas: "..roundsWon,font,0,screenh-60,screenw,"right")
+        love.graphics.printf("Apostas: "..roundBet,font,0,screenh-40,screenw,"right")
+        love.graphics.printf("Vidas: "..vidas,font,0,screenh-20,screenw,"right")
+        
         for k,value in ipairs(enemiesHand) do
             local offset = (screenw - (#value.cards * cardW*cardSize + (#value.cards - 1) * spacing)) / 2
             for i,v in ipairs(value.cards) do
@@ -153,6 +160,18 @@ function addCards()
     end
 end
 
+function remakeRects()
+    playerCartasRect = {}
+    for k,v in ipairs(playerCartas) do
+        local spacing = 5
+        local offset = (screenw - (#playerCartas * cardW*cardSize + (#playerCartas - 1) * spacing)) / 2
+        for k,v in ipairs(playerCartas) do
+            local x = offset + (k - 1) * (cardW*cardSize + spacing)
+            playerCartasRect[k] = {x=x,y=screenh-cardH*cardSize,w=cardW*cardSize,h=cardH*cardSize}
+        end
+    end
+end
+
 function love.mousepressed(x,y,btn)
     if btn==1 then
         if betTime==false and whoTurn==localId then
@@ -167,6 +186,10 @@ function love.mousepressed(x,y,btn)
                     table.remove(playerCartas,i)
                     table.remove(playerCartasRect,i)
                     whoPlayed=whoPlayed+1
+                    if partyId==tostring(localId) and (whoDealer~=localId or #playerCartas>0) then
+                        changeTurn(false)
+                    end
+                    remakeRects()
                     break -- Saia do loop, já que encontramos a carta clicada
                 end
             end
@@ -265,6 +288,7 @@ function love.keypressed(key)
     elseif confirmTime then
         if key=="s" then
             publish("confirm",true)
+            whoConfirmed=whoConfirmed+1
             confirmTime=false
         end
     end
@@ -274,6 +298,10 @@ function newRound()
     round=round+1
     playerCartas={}
     enemiesHand = {}
+    betTime=true
+    totalBet=0
+    clearTable()
+    checkForLife()
     addCards()
     showHand()
 end
@@ -297,9 +325,6 @@ function changeTurn(inicio)
             if betTime==true then
                 publish("bettime",false)
                 betTime=false
-            else
-                betTime=true
-                publish("bettime",true)
             end
             gotEnd=false
         end
@@ -333,11 +358,21 @@ function checkHowManyPlayed()
     end
 end
 
-function whoWon()
-    local idRanks = table.sort(playedCards, compararPorRank)
+function checkForLife()
+    if roundsWon~=roundBet then
+        vidas=vidas-1
+    end
+    roundsWon=0
+    roundBet=0
+end
+
+function whoWon()    
+    local idRanks=playedCards
+    table.sort(idRanks, compararPorRank)
     local winnerId = idRanks[1].id
     local melou = false
     local melouRank = idRanks[1]
+    
     for k,v in ipairs(idRanks) do -- 3 3 4 4 5
         if k>1 then
             if melou then
@@ -350,9 +385,12 @@ function whoWon()
         end
     end
     publish("winner",winnerId)
+    if winnerId==localId then
+        roundsWon=roundsWon+1
+    end
 end
 
-local function compararPorRank(a, b)
+function compararPorRank(a, b)
     return a.rank < b.rank
 end
 
@@ -389,7 +427,6 @@ function enterGame(channel)
         callback = function(message)
             if message.action=="newround" then
                 newRound()
-                clearTable()
                 fazQuantas=0                
             end
             if message.action=="myhand" then
@@ -435,8 +472,7 @@ function enterGame(channel)
             end
             if message.action=="playcard" then
                 whoPlayed=whoPlayed+1
-                local v = json.decode(message.content)
-                print("PLAYCARD DEBUG: "..v.img)
+                local v = json.decode(message.content)                
                 local image = love.graphics.newImage(v.img)
                 local temp = {id=message.id,naipe=v.naipe,number=v.number,rank=v.rank,img=image,index=v.index}
                 table.insert(playedCards,temp)
@@ -456,6 +492,7 @@ function enterGame(channel)
                 if message.content==localId then
                     roundsWon=roundsWon+1
                 end
+                clearTable()
             end
         end
     })
