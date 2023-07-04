@@ -1,7 +1,7 @@
 require("utils.noobhub")
 require("utils.json")
 
-love.graphics.setDefaultFilter("nearest")
+love.graphics.setDefaultFilter("linear")
 
 local naipes = {"clubs","diamonds","hearts","spades"}
 local cartas = {"ace",2,3,4,5,6,7,"jack","queen","king"}
@@ -21,7 +21,9 @@ local cardW,cardH = 500,726
 local screenw,screenh = love.graphics.getDimensions()
 local fazQuantas = 0
 
-local hub = noobhub.new({server="localhost", port="8181"})
+local system = love.system.getOS()
+
+local hub = noobhub.new({server="187.73.30.41", port="8181"})
 local localId = rng(10000,99999)
 local gotEnd = false
 local enemiesHand = {}
@@ -37,16 +39,21 @@ local whoTurn = localId
 local whoDealer = localId
 local betTime = true
 local confirmTime = false
+local clearConfirm = false
 local totalBet = 0
 local wrongbet = false
 local partyId = ""
 local totalPlayers = 1
+local spacing = 5
+local enemySpacing = -10
+local androidSpacing = 0
 
 local font = love.graphics.newFont(18)
 
 function love.load()
     addCards()
     --enterGame()
+    if system=="Android" then androidSpacing=screenw*0.75 end
 end
 
 function love.update(dt)
@@ -60,6 +67,12 @@ function love.update(dt)
 end
 
 function love.draw()
+    if system=="Android" then
+        love.graphics.setColor(0.1,0.6,0.1)
+        love.graphics.rectangle("fill",0,screenh-50,50,50)
+        love.graphics.setColor(1,1,1)
+    end
+
     if onStartMenu then
         love.graphics.printf("Pressione N para criar uma sala!",font,0,screenh/2,screenw,"center")
         love.graphics.printf("Ou digite aqui o id de uma sala e pressione enter: "..partyId,font,0,screenh/2+25,screenw,"center")
@@ -73,7 +86,6 @@ function love.draw()
         end
         love.graphics.printf("Pressione Esc para sair dessa sala!",font,0,screenh-50,screenw,"center") 
     else
-        local spacing = 5
         local offset = (screenw - (#playerCartas * cardW*cardSize + (#playerCartas - 1) * spacing)) / 2
         if round==1 and #playerCartas==1 then
             local x = offset + (0) * (cardW*cardSize + spacing)
@@ -90,14 +102,48 @@ function love.draw()
         
         for k,value in ipairs(enemiesHand) do
             local offset = (screenw - (#value.cards * cardW*cardSize + (#value.cards - 1) * spacing)) / 2
+            local offy = 0
+            local rotation = 0
+            local textrotation = 0
+            if k == 1 then
+                offset = 0
+                offy = (screenh - (#value.cards * cardH*cardSize + (#value.cards - 1) * spacing)) / 2 + (screenh/4)
+                rotation=math.rad(-90)
+                textrotation=math.rad(-90)
+            elseif k == 2 then
+                offset = (screenw - (#value.cards * cardW*cardSize + (#value.cards - 1) * spacing)) / 2
+                offy = 0
+            elseif k == 3 then
+                offset = screenw - cardH*cardSize
+                offy = (screenh - (#value.cards * cardH*cardSize + (#value.cards - 1) * spacing)) / 2 + (screenh/4)
+                rotation=math.rad(-90)
+                textrotation=math.rad(90)
+            end
             for i,v in ipairs(value.cards) do
                 local drawing = v.img
                 if round>1 then drawing=cardback end
-                local x = offset + (i - 1) * (cardW*cardSize + spacing)
-                love.graphics.draw(drawing,x,0,0,cardSize)
+                local x = offset
+                local y = offy
+                if rotation==0 then
+                    x = offset + (i - 1) * (cardW*cardSize + enemySpacing)
+                else
+                    y = offy + (i - 1) * (cardW*cardSize+enemySpacing)
+                end
+                love.graphics.draw(drawing,x,y,rotation,cardSize)
             end
             if #value.cards>0 then
-                love.graphics.printf(value.id,font,offset,cardH*cardSize+5,screenw,"left")   
+                local whereY = offy
+                local whereX = offset
+                if offy==0 then whereY = cardH*cardSize+10 end    
+                if textrotation~=0 then
+                    if whereX==0 then
+                        whereX=whereX+(cardH*cardSize)
+                    else
+                        whereX=whereX
+                        whereY=whereY-(3*18)
+                    end
+                end            
+                love.graphics.print(value.id,font,whereX,whereY,textrotation)   
             end         
         end
         for k,value in ipairs(playedCards) do
@@ -110,22 +156,28 @@ function love.draw()
             love.graphics.printf(value.id,font,offset,screenh/2-(cardH*cardSize/2)-10,screenw,"left")              
         end
         if whoTurn==localId then 
-            if betTime then 
-                love.graphics.printf("Faz: "..fazQuantas,font,0,screenh/2,screenw,"center")
+            if betTime then
+                love.graphics.printf("Faz: "..fazQuantas,font,0,screenh/2-(cardH*cardSize/2)+(cardH*cardSize)+10+20,screenw-androidSpacing,"center")
                 if whoDealer==localId then 
-                    love.graphics.printf("Apostas totais: "..totalBet,font,0,screenh/2+20,screenw,"center") 
+                    love.graphics.printf("Apostas totais: "..totalBet,font,0,screenh/2-(cardH*cardSize/2)+(cardH*cardSize)+10+40,screenw-androidSpacing,"center") 
                     if wrongbet then
-                        love.graphics.printf("Sua aposta não pode ser esse valor!",font,0,screenh/2+40,screenw,"center") 
+                        love.graphics.printf("Sua aposta não pode ser esse valor!",font,0,screenh/2-(cardH*cardSize/2)+(cardH*cardSize)+10+60,screenw-androidSpacing,"center") 
                     end
                 end
             end
             if #playerCartas>0 then
-                love.graphics.printf("Seu turno!",font,0,screenh/2-20,screenw,"center")            
+                love.graphics.printf("Seu turno!",font,0,screenh/2-(cardH*cardSize/2)+(cardH*cardSize)+10,screenw-androidSpacing,"center")            
             end
         end
         if #playerCartas==0 and confirmTime then
             love.graphics.printf("Pressione S para confirmar e prosseguir!",font,0,screenh-20,screenw,"center") 
         end
+    end
+
+    if clearConfirm then
+        love.graphics.setColor(0.2,0.6,0.2)
+        love.graphics.printf("Pressione a tela para continuar!",font,0,0,screenw,"center")
+        love.graphics.setColor(1,1,1)
     end
 end
 
@@ -173,33 +225,38 @@ function remakeRects()
 end
 
 function love.mousepressed(x,y,btn)
-    if btn==1 then
-        if betTime==false and whoTurn==localId then
-            for i, carta in ipairs(playerCartasRect) do
-                if x >= carta.x and x <= carta.x + carta.w and y >= carta.y and y <= carta.y + carta.h then
-                    -- Carta clicada!
-                    local v = playerCartas[i]
-                    local temp = {number=v.number,naipe=v.naipe,rank=v.rank,img="cards/"..v.number.."_of_"..v.naipe..".png",index=i}
-                    publish("playcard",json.encode(temp))
-                    v["id"] = localId
-                    table.insert(playedCards,v)
-                    table.remove(playerCartas,i)
-                    table.remove(playerCartasRect,i)
-                    whoPlayed=whoPlayed+1
-                    if partyId==tostring(localId) and (whoDealer~=localId or #playerCartas>0) then
-                        changeTurn(false)
-                    end
-                    remakeRects()
-                    break -- Saia do loop, já que encontramos a carta clicada
+
+    if clearConfirm then
+        clearConfirm=false
+        clearTable()
+        return nil
+    end
+
+    if system=="Android" then
+        if x >= 0 and x <= 0 + 50 and y >= screenh-50 and y <= screenh-50 + 50 then
+            love.keyboard.setTextInput(true)
+        end
+    end
+
+    if betTime==false and whoTurn==localId then
+        for i, carta in ipairs(playerCartasRect) do
+            if x >= carta.x and x <= carta.x + carta.w and y >= carta.y and y <= carta.y + carta.h then
+                -- Carta clicada!
+                local v = playerCartas[i]
+                local temp = {number=v.number,naipe=v.naipe,rank=v.rank,img="cards/"..v.number.."_of_"..v.naipe..".png",index=i}
+                publish("playcard",json.encode(temp))
+                v["id"] = localId
+                table.insert(playedCards,v)
+                table.remove(playerCartas,i)
+                table.remove(playerCartasRect,i)
+                whoPlayed=whoPlayed+1
+                if partyId==tostring(localId) and (whoDealer~=localId or #playerCartas>0) then
+                    changeTurn(false)
                 end
+                remakeRects()
+                break -- Saia do loop, já que encontramos a carta clicada
             end
         end
-
-    elseif btn==2 then
-        publish("newround",1)
-        newRound()
-    else
-        
     end
 end
 
@@ -249,11 +306,13 @@ function love.keypressed(key)
             leaveGame()
         end
         if key=="s" and partyId==tostring(localId) then
-            waitingPlayers=false
-            publish("startgame")
-            publish("whodealer",localId)
-            changeTurn(true)
-            showHand()
+            if totalPlayers~=1 then
+                waitingPlayers=false
+                publish("startgame")
+                publish("whodealer",localId)
+                changeTurn(true)
+                showHand()
+            end
         end
     elseif betTime then
         if whoDealer==localId and fazQuantas+totalBet==#playerCartas then wrongbet=true end
@@ -354,7 +413,8 @@ function checkHowManyPlayed()
         whoPlayed=0
         --check who won
         whoWon()
-        clearTable()
+        clearConfirm=true
+        publish("clearconfirm", true)
     end
 end
 
@@ -492,7 +552,9 @@ function enterGame(channel)
                 if message.content==localId then
                     roundsWon=roundsWon+1
                 end
-                clearTable()
+            end
+            if message.action=="clearconfirm" then
+                clearConfirm=true
             end
         end
     })
