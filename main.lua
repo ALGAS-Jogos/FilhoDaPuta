@@ -22,17 +22,20 @@ local screenw,screenh = love.graphics.getDimensions()
 local fazQuantas = 0
 
 local system = love.system.getOS()
-
-local hub = noobhub.new({server="187.73.30.41", port="8181"})
+                                --187.73.30.41"
+local hub = noobhub.new({server="localhost", port="8181"})
 local localId = rng(10000,99999)
+local localName = ""
 local gotEnd = false
 local enemiesHand = {}
+local enemiesBets = {}
 local playedCards = {}
 local whoPlayed = 0
 local whoConfirmed = 0
 local players = {}
 players[1] = localId
-local onStartMenu = true
+local onNameMenu = true
+local onStartMenu = false
 local waitingPlayers = false
 local myTurn = false
 local whoTurn = localId
@@ -45,8 +48,9 @@ local wrongbet = false
 local partyId = ""
 local totalPlayers = 1
 local spacing = 5
-local enemySpacing = -10
+local enemySpacing = -50
 local androidSpacing = 0
+local androidKeyboard = 0
 
 local font = love.graphics.newFont(18)
 
@@ -64,6 +68,14 @@ function love.update(dt)
             checkHowManyConfirmed()
         end
     end
+
+    if system=="Android" then
+        if love.keyboard.hasTextInput() then
+            androidKeyboard=screenh/3
+        else
+            androidKeyboard=0
+        end
+    end
 end
 
 function love.draw()
@@ -74,17 +86,20 @@ function love.draw()
     end
 
     if onStartMenu then
-        love.graphics.printf("Pressione N para criar uma sala!",font,0,screenh/2,screenw,"center")
-        love.graphics.printf("Ou digite aqui o id de uma sala e pressione enter: "..partyId,font,0,screenh/2+25,screenw,"center")
+        love.graphics.printf("Pressione N para criar uma sala!",font,0,screenh/2-androidKeyboard,screenw,"center")
+        love.graphics.printf("Ou digite aqui o id de uma sala e pressione enter: "..partyId,font,0,screenh/2+25-androidKeyboard,screenw,"center")
+    elseif onNameMenu then
+        love.graphics.printf("Digite seu nome: "..localName,font,0,screenh/2-androidKeyboard,screenw,"center")
+        love.graphics.printf("e aperte enter para continuar!",font,0,screenh/2+25-androidKeyboard,screenw,"center")
     elseif waitingPlayers then
-        love.graphics.printf("ID da sua sala: "..tostring(partyId),font,0,screenh/2,screenw,"center")
-        love.graphics.printf("Pessoas na sala: "..tostring(totalPlayers),font,0,screenh/2+25,screenw,"center")
+        love.graphics.printf("ID da sua sala: "..tostring(partyId),font,0,screenh/2-androidKeyboard,screenw,"center")
+        love.graphics.printf("Pessoas na sala: "..tostring(totalPlayers),font,0,screenh/2+25-androidKeyboard,screenw,"center")
         if partyId==tostring(localId) then 
-            love.graphics.printf("Pressione S para iniciar a partida!",font,0,screenh/2+50,screenw,"center") 
+            love.graphics.printf("Pressione S para iniciar a partida!",font,0,screenh/2+50-androidKeyboard,screenw,"center") 
         else
-            love.graphics.printf("Espere o dono da sala iniciar a partida!",font,0,screenh/2+50,screenw,"center")
+            love.graphics.printf("Espere o dono da sala iniciar a partida!",font,0,screenh/2+50-androidKeyboard,screenw,"center")
         end
-        love.graphics.printf("Pressione Esc para sair dessa sala!",font,0,screenh-50,screenw,"center") 
+        love.graphics.printf("Pressione Esc para sair dessa sala!",font,0,screenh-50-androidKeyboard,screenw,"center") 
     else
         local offset = (screenw - (#playerCartas * cardW*cardSize + (#playerCartas - 1) * spacing)) / 2
         if round==1 and #playerCartas==1 then
@@ -142,8 +157,10 @@ function love.draw()
                         whereX=whereX
                         whereY=whereY-(3*18)
                     end
-                end            
-                love.graphics.print(value.id,font,whereX,whereY,textrotation)   
+                end
+                local enemybet = 0
+                if enemiesBets[value.id] then enemybet=enemiesBets[value.id] end
+                love.graphics.print(value.name..": "..enemybet,font,whereX,whereY,textrotation)   
             end         
         end
         for k,value in ipairs(playedCards) do
@@ -298,6 +315,16 @@ function love.keypressed(key)
             enterGame(tostring(localId))
             partyId=tostring(localId)
         end
+    elseif onNameMenu then
+        if key=="backspace" then
+            localName=string.sub(localName,1,#localName-1)
+        elseif key=="return" then
+            onNameMenu=false
+            onStartMenu=true
+        else
+            localName=localName..key
+        end
+        if #localName>6 then localName=string.sub(localName,1,6) end
     elseif waitingPlayers then
         if key=="escape" then
             waitingPlayers=false
@@ -357,6 +384,7 @@ function newRound()
     round=round+1
     playerCartas={}
     enemiesHand = {}
+    enemiesBets={}
     betTime=true
     totalBet=0
     clearTable()
@@ -475,6 +503,7 @@ function publish(action,content)
             action = action,
             content = content,
             id = localId,
+            name = localName,
             timestamp = os.time()
         }
     })
@@ -495,7 +524,7 @@ function enterGame(channel)
                 for k,v in ipairs(temp) do
                     temptwo[k]={naipe=v.naipe,number=v.number,rank=v.rank,img=love.graphics.newImage(v.img)}
                 end
-                local obj = {id = message.id,cards = temptwo}
+                local obj = {name=message.name,id = message.id,cards = temptwo}
                 table.insert(enemiesHand,obj)
             end
             if message.action=="justjoined" then
@@ -523,6 +552,7 @@ function enterGame(channel)
                     changeTurn(false)
                 end
                 totalBet=totalBet+message.content
+                enemiesBets[message.id]=message.content
             end
             if message.action=="bettime" and tostring(message.id)==partyId then
                 betTime=message.content
@@ -531,6 +561,10 @@ function enterGame(channel)
                 confirmTime=message.content
             end
             if message.action=="playcard" then
+                if clearConfirm then
+                    clearConfirm=false
+                    clearTable()
+                end
                 whoPlayed=whoPlayed+1
                 local v = json.decode(message.content)                
                 local image = love.graphics.newImage(v.img)

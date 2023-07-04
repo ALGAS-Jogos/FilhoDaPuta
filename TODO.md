@@ -11,3 +11,5 @@
 - [ ] Fix the draw code
 - [ ] Better the android UI
 - [ ] Make this look good
+- [ ] Fix the clearTable code
+- [ ] Make a name system
