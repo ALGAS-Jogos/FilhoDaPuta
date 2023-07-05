@@ -8,8 +8,13 @@
 - [X] Make the leader check the thing after all played
 - [X] Make the board wipe itself
 - [X] Make the rect update when playing!
-- [ ] Fix the draw code
-- [ ] Better the android UI
+- [x] Fix the draw code
+- [X] Better the android UI
 - [ ] Make this look good
-- [ ] Fix the clearTable code
-- [ ] Make a name system
+- [X] Fix the clearTable code
+- [X] Make a name system
+- [X] Make the person who won last round start this round
+- [X] Make the dealer and whoturn status
+- [ ] Make the party leader deal the cards to avoid double cards
+- [ ] Make the death system
+- [X] Sync the players renderings

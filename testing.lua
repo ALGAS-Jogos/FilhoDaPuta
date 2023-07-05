@@ -1,19 +1,35 @@
--- Tabela pai contendo várias tabelas internas com id e rank
-local tabelaPai = {
-    {id = 1, rank = 3},
-    {id = 2, rank = 1},
-    {id = 3, rank = 2}
-}
-
--- Função de comparação para ordenar com base no valor do "rank"
-local function compararPorRank(a, b)
-    return a.rank < b.rank
-end
-
--- Ordenar a tabela pai com base no "rank"
-table.sort(tabelaPai, compararPorRank)
-
--- Imprimir a tabela pai ordenada
-for i, tabelaInterna in ipairs(tabelaPai) do
-    print("ID:", tabelaInterna.id, "Rank:", tabelaInterna.rank)
-end
+function findAndReorder(table)
+    local startIndex = nil
+    for i, value in pairs(table) do
+      if value == 1 then
+        startIndex = i
+        break
+      end
+    end
+  
+    if not startIndex then
+      return {} -- Retorna uma tabela vazia se o valor 1 não for encontrado
+    end
+  
+    local result = {}
+    local count = 1
+    for i = startIndex+1, #table do
+      result[count] = table[i]
+      count = count + 1
+    end
+    for i = 1, startIndex - 1 do
+      result[count] = table[i]
+      count = count + 1
+    end
+  
+    return result
+  end
+  
+  -- Exemplo de uso:
+  local inputTable = {5, 7, 1, 3}
+  local outputTable = findAndReorder(inputTable)
+  
+  for i, value in ipairs(outputTable) do
+    print(i .. "=" .. value)
+  end
+  
