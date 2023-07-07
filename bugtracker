@@ -1,0 +1,4 @@
+- as vezes o turno não passa quando o (dealer e partyleader) joga uma carta
+- o players table não é reiniciado apos gameEnd
+- tão mandando gamewinner sem estar em um jogo
+- quanto mais cartas tem, mais pra cima os jogadores n2 e n4 aparecem

@@ -10,11 +10,14 @@
 - [X] Make the rect update when playing!
 - [x] Fix the draw code
 - [X] Better the android UI
-- [ ] Make this look good
+- [X] Make this look ~good~ acceptable (I added a background color and called it a day)
 - [X] Fix the clearTable code
 - [X] Make a name system
 - [X] Make the person who won last round start this round
 - [X] Make the dealer and whoturn status
 - [ ] Make the party leader deal the cards to avoid double cards
-- [ ] Make the death system
+- [X] Make the death system
+- [X] Make Winner system
 - [X] Sync the players renderings
+- [X] Fix the textinput for name
+- [ ] Close the android keyboard after a bet
