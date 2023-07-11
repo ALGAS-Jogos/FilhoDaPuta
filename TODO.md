@@ -20,4 +20,4 @@
 - [X] Make Winner system
 - [X] Sync the players renderings
 - [X] Fix the textinput for name
-- [ ] Close the android keyboard after a bet
+- [X] Close the android keyboard after a bet

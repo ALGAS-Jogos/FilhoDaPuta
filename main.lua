@@ -12,7 +12,7 @@ local playerCartas = {}
 local playerCartasRect = {}
 love.math.setRandomSeed(os.time()/2+1)
 local rng = love.math.random
-local round = 1
+local round = 0
 local passedRounds = 1
 local roundsWon = 0
 local roundBet = 0
@@ -65,11 +65,11 @@ local imdead=false
 local bgc={0.05,0.05,0.25}
 
 local font = love.graphics.newFont(18)
+local keyboardImage = love.graphics.newImage("imgs/newkeyboard.png")
 
 function love.load()
-    --love.window.setFullscreen(true)
+    if system~="Android" then love.window.setFullscreen(true) end
     screenw,screenh = love.graphics.getDimensions()
-    addCards()
     --enterGame()
     if system=="Android" then
         androidSpacing=screenw*0.75 
@@ -104,9 +104,10 @@ function love.draw()
     love.graphics.setColor(1,1,1)
 
     if system=="Android" then
-        love.graphics.setColor(0.1,0.6,0.1)
-        love.graphics.rectangle("fill",0,screenh-50,50,50)
+        love.graphics.setColor(0.35,0.8,0.3)
+        love.graphics.rectangle("fill",0,screenh-50,50,50,4.5)
         love.graphics.setColor(1,1,1)
+        love.graphics.draw(keyboardImage,0,screenh-50)
     end
 
     if onStartMenu then
@@ -157,22 +158,22 @@ function love.draw()
         love.graphics.printf("Vidas: "..vidas,font,0,screenh-20,screenw,"right")        
         
         for k,value in ipairs(enemiesHand) do
-            local offset = (screenw - (#value.cards * cardW*cardSize + (#value.cards - 1) * spacing)) / 2
+            local offset = (screenw - (#value.cards * cardW*cardSize + (#value.cards - 1) * enemySpacing)) / 2
             local offy = 0
             local rotation = 0
             local textrotation = 0
             local index=getPlayerIndex(value.id)
             if index == 1 then
                 offset = 0
-                offy = (screenh - (#value.cards * cardH*cardSize + (#value.cards - 1) * spacing)) / 2 + (screenh/4+#value.cards*10)
+                offy = (screenh - (#value.cards * cardH*cardSize + (#value.cards - 1) * enemySpacing)) / 2 + (screenh/4+#value.cards-1*enemySpacing) / 2
                 rotation=math.rad(-90)
                 textrotation=math.rad(-90)
             elseif index == 2 then
-                offset = (screenw - (#value.cards * cardW*cardSize + (#value.cards - 1) * spacing)) / 2
+                offset = (screenw - (#value.cards * cardW*cardSize + (#value.cards - 1) * enemySpacing)) / 2
                 offy = 0
             elseif index == 3 then
                 offset = screenw - cardH*cardSize
-                offy = (screenh - (#value.cards * cardH*cardSize + (#value.cards - 1) * spacing)) / 2 + (screenh/4+#value.cards*10)
+                offy = (screenh - (#value.cards * cardH*cardSize + (#value.cards - 1) * enemySpacing)) / 2 + (screenh/4+#value.cards-1*enemySpacing) / 2
                 rotation=math.rad(-90)
                 textrotation=math.rad(90)
             end
@@ -195,6 +196,7 @@ function love.draw()
                 if textrotation~=0 then
                     if whereX==0 then
                         whereX=whereX+(cardH*cardSize)
+                        whereY=whereY+(#value.cards-1)*(cardW*cardSize+enemySpacing)
                     else
                         whereX=whereX
                         whereY=whereY-(cardW*cardSize)
@@ -225,23 +227,23 @@ function love.draw()
             if system=="Android" then
                 if love.keyboard.hasTextInput() then
                     limit=screenw
-                    y=screenh/6
+                    y=screenh/6-10
                     love.graphics.setColor(0.1,0.1,0.1,0.5)
                     love.graphics.rectangle("fill",screenw/4,y-20,screenw/2,80,5)
                     love.graphics.setColor(1,1,1,1)
                 end
             end
             if betTime then
-                love.graphics.printf("Faz: "..fazQuantas,font,x,y+20,limit,"center")
+                love.graphics.printf("Faz: "..fazQuantas,font,x,y+30,limit,"center")
                 if whoDealer==localId then 
-                    love.graphics.printf("Apostas totais: "..totalBet,font,x,y+40,limit,"center") 
+                    love.graphics.printf("Apostas totais: "..totalBet,font,x,y+50,limit,"center") 
                     if wrongbet then
-                        love.graphics.printf("Sua aposta não pode ser esse valor!",font,x,y+60,limit,"center") 
+                        love.graphics.printf("Sua aposta não pode ser esse valor!",font,x,y+70,limit,"center") 
                     end
                 end
             end
             if #playerCartas>0 then
-                if clearConfirm==false then love.graphics.printf("Seu turno!",font,x,y,limit,"center") end
+                if clearConfirm==false then love.graphics.printf("Seu turno!",font,x,y+10,limit,"center") end
             end
         end
         if #playerCartas==0 and confirmTime then
@@ -269,28 +271,51 @@ function addCards()
     if round>7 then
         totalCards=7
     end
-    for i=1,totalCards do
-        local spacing = 5
-        local offset = (screenw - (totalCards * cardW*cardSize + (totalCards - 1) * spacing)) / 2
-        local x = offset + (i - 1) * (cardW*cardSize + spacing)
-        ::reroll::
-        local number = cartas[rng(1,#cartas)]
-        local naipe = naipes[rng(1,#naipes)]
-        for k,v in ipairs(alreadyThere) do
-            if v.number==number and v.naipe==naipe then goto reroll end
-        end
-        local rank = 0
-        for k,v in pairs(manilhas) do
-            if number==v.number and naipe==v.naipe then rank=v.rank end
-        end
-        if rank==0 then
-            for k,v in ipairs(ordem) do
-                if number==v.number then rank=v.rank end
+    local tempcards = {}
+    local tempcardsrect = {}
+    for k=1,#players do
+        for i=1,totalCards do
+            local spacing = 5
+            local offset = (screenw - (totalCards * cardW*cardSize + (totalCards - 1) * spacing)) / 2
+            local x = offset + (i - 1) * (cardW*cardSize + spacing)
+            ::reroll::
+            local number = cartas[rng(1,#cartas)]
+            local naipe = naipes[rng(1,#naipes)]
+            for k,v in ipairs(alreadyThere) do
+                if v.number==number and v.naipe==naipe then goto reroll end
             end
+            local rank = 0
+            for k,v in pairs(manilhas) do
+                if number==v.number and naipe==v.naipe then rank=v.rank end
+            end
+            if rank==0 then
+                for k,v in ipairs(ordem) do
+                    if number==v.number then rank=v.rank end
+                end
+            end
+            alreadyThere[i]={number=number,naipe=naipe}
+            tempcards[i]={number=number,naipe=naipe,rank=rank,img="cards/"..number.."_of_"..naipe..".png"}
+            tempcardsrect[i]={x=x,y=screenh-cardH*cardSize,w=cardW*cardSize,h=cardH*cardSize}
         end
-        alreadyThere[i]={number=number,naipe=naipe}
-        playerCartas[i]={number=number,naipe=naipe,rank=rank,img=love.graphics.newImage("cards/"..number.."_of_"..naipe..".png")}
-        playerCartasRect[i]={x=x,y=screenh-cardH*cardSize,w=cardW*cardSize,h=cardH*cardSize}
+        if players[k]==localId then
+            playerCartas=tempcards
+            playerCartasRect=tempcardsrect
+        else
+            publish("yourcards",json.encode({id=players[k],cards=tempcards,rects=tempcardsrect}))
+        end
+        tempcards={}
+        tempcardsrect={}
+    end
+    makeImgs()
+    showHand()
+end
+
+function makeImgs()
+    for i=1,#playerCartas do
+        if type(playerCartas[i].img)=="string" then
+            local image=love.graphics.newImage(playerCartas[i].img)
+            playerCartas[i].img=image
+        end
     end
 end
 
@@ -317,11 +342,7 @@ function love.mousepressed(x,y,btn)
     if gameOver then
         gameOver=false
         onStartMenu=true
-        players={}
-        drawingPlayers={}
-        namePlayers={}
-        fazQuantas=0
-        partyId=""
+        resetVars()
         return nil
     end
 
@@ -355,7 +376,7 @@ function love.mousepressed(x,y,btn)
                     changeTurn(false)
                 end
                 remakeRects()                
-                break -- Saia do loop, já que encontramos a carta clicada
+                break
             end
         end
     end
@@ -403,6 +424,7 @@ function love.keypressed(key)
             waitingPlayers=true
             onStartMenu=false
             players={}
+            players[1]=localId
             namePlayers={}
             enemiesHand={}
             enemiesBets={}
@@ -414,6 +436,7 @@ function love.keypressed(key)
         if key=="escape" then
             imdead=false
             onStartMenu=true
+            resetVars()
         end        
     elseif onNameMenu then
         if key=="backspace" then
@@ -438,8 +461,10 @@ function love.keypressed(key)
                 waitingPlayers=false
                 publish("startgame")
                 publish("whodealer",localId)
+                publish("newround",1)
+                newRound(1)
                 changeTurn(true)
-                showHand()
+                --showHand()
             end
         end
     elseif betTime then
@@ -486,23 +511,33 @@ function love.keypressed(key)
     end
 end
 
+function resetVars()
+    players={}
+    players[1]=localId
+    namePlayers={}
+    enemiesHand={}
+    enemiesBets={}
+    drawingPlayers={}
+    totalPlayers=1
+    partyId=""
+end
+
 function newRound(roundup)
-    if partyId==tostring(localId) then
-        publish("checkdead")
-        checkForLife()
-    end
+    playerCartas={}
     round=round+roundup
     fazQuantas=0
-    playerCartas={}
     enemiesHand = {}
     enemiesBets={}
     betTime=true
     totalBet=0
     clearTable()
+    if partyId==tostring(localId) then
+        publish("checkdead")
+        checkForLife()
+        addCards()
+    end
     --checkForLife()
     if imdead then return nil end
-    addCards()
-    showHand()
 end
 
 function clearTable()
@@ -536,10 +571,13 @@ end
 
 function sendPlayerlist()
     local temp = {}
-    for i=1,#drawingPlayers do
-        table.insert(temp,{index=i+1,id=drawingPlayers[i]})
+    --for i=1,#drawingPlayers do
+    --    table.insert(temp,{index=i+1,id=drawingPlayers[i]})
+    --end
+    --table.insert(temp,{index=1,id=localId})
+    for i=1,#players do
+        table.insert(temp,{index=i,id=players[i]})
     end
-    table.insert(temp,{index=1,id=localId})
     publish("listplayers",json.encode(temp))
 end
 
@@ -637,11 +675,12 @@ function checkHowManyConfirmed()
 end
 
 function checkForGameWinner()
-    if #players==1 and waitingPlayers==false then
+    if #players==1 and waitingPlayers==false and onStartMenu==false and onNameMenu==false then --bug fix
         publish("gamewinner",namePlayers[players[1]])
         gameWinner=namePlayers[players[1]]
         gameOver=true
         imdead=false
+        --resetVars()
     end
 end
 
@@ -663,13 +702,26 @@ function enterGame(channel)
         channel = channel,
         callback = function(message)
             if message.action=="newround" then
+                playerCartas={}
                 newRound(message.content)
                 fazQuantas=0                
             end
             if message.action=="checkdead" and imdead==false and tostring(message.id)==partyId then
                 checkForLife()
             end
+            if message.action=="yourcards" and tostring(message.id)==partyId then
+                local temp = json.decode(message.content)
+                if temp.id==localId then
+                    playerCartas=temp.cards
+                    playerCartasRect=temp.rects
+                end
+                makeImgs()
+                showHand()
+            end
             if message.action=="myhand" then
+                --for k,v in ipairs(enemiesHand) do
+                --    if v.id==message.id then return nil end
+                --end
                 local temp = json.decode(message.content)
                 local temptwo = {}
                 for k,v in ipairs(temp) do
@@ -729,7 +781,6 @@ function enterGame(channel)
             end
             if message.action=="startgame" and tostring(message.id)==partyId then
                 waitingPlayers=false
-                showHand()
                 if system=="Android" and love.keyboard.hasTextInput() then love.keyboard.setTextInput(false) end
             end
             if message.action=="bet" then
@@ -804,6 +855,7 @@ function enterGame(channel)
                 gameWinner=message.content
                 gameOver = true
                 imdead=false
+                --resetVars()
             end
         end
     })
