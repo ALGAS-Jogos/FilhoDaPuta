@@ -15,7 +15,7 @@
 - [X] Make a name system
 - [X] Make the person who won last round start this round
 - [X] Make the dealer and whoturn status
-- [ ] Make the party leader deal the cards to avoid double cards
+- [X] Make the party leader deal the cards to avoid double cards
 - [X] Make the death system
 - [X] Make Winner system
 - [X] Sync the players renderings
