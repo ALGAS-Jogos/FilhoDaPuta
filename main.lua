@@ -26,7 +26,7 @@ local fazQuantas = 0
 local system = love.system.getOS()
                                 --187.73.30.41"
 --local hub = noobhub.new({server="localhost", port="8181"})
-local hub = noobhub.new({server="187.73.30.41", port="8181"})
+local hub = noobhub.new({server="localhost", port="8181"})
 local localId = rng(10000,99999)
 local localName = ""
 local gotEnd = false
@@ -373,7 +373,7 @@ function love.mousepressed(x,y,btn)
                 whoPlayed=whoPlayed+1
                 local totalrounds = round
                 if totalrounds>7 then totalrounds=7 end
-                if partyId==tostring(localId) and (whoDealer~=localId or passedRounds<totalrounds) then
+                if partyId==tostring(localId) and ((whoDealer~=localId or passedRounds<totalrounds) or checkForEnemiesCards()) then
                     changeTurn(false)
                 end
                 remakeRects()                
@@ -381,6 +381,13 @@ function love.mousepressed(x,y,btn)
             end
         end
     end
+end
+
+function checkForEnemiesCards()
+    for i,v in ipairs(enemiesHand) do
+        if #v.cards>0 then return true end
+    end
+    return false
 end
 
 function love.textinput(t)
