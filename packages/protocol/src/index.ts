@@ -147,7 +147,10 @@ export const ErrorCodeSchema = z.enum([
   'BAD_NAME',
   'ROOM_NOT_FOUND',
   'ROOM_FULL',
+  'ROOM_LIMIT',
   'GAME_STARTED',
+  'NOT_ENOUGH_PLAYERS',
+  'PLAYERS_DISCONNECTED',
   'NOT_HOST',
   'NOT_IN_GAME',
   'NOT_YOUR_TURN',
@@ -186,7 +189,11 @@ export const CreateRoomCommandSchema = z.object({
 
 export const JoinRoomCommandSchema = z.object({
   type: z.literal('joinRoom'),
-  code: z.string().trim().toUpperCase().regex(new RegExp(`^[A-Z0-9]{${ROOM_CODE_LENGTH}}$`)),
+  code: z
+    .string()
+    .trim()
+    .toUpperCase()
+    .regex(new RegExp(`^[A-Z0-9]{${ROOM_CODE_LENGTH}}$`)),
   name: z.string().trim().min(1).max(MAX_NAME_LENGTH).optional(),
   token: z.string().min(16).max(256).optional(),
   spectate: z.boolean().optional(),

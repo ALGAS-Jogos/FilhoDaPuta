@@ -1,5 +1,5 @@
 import { cardsForRound, createDeck, MAX_CARDS_PER_ROUND, STARTING_LIVES } from './cards.js';
-import { shuffle, type Rng } from './rng.js';
+import { type Rng, shuffle } from './rng.js';
 import {
   GameError,
   type GamePlayer,

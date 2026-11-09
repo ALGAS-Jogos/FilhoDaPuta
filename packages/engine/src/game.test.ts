@@ -11,12 +11,12 @@ import {
   createGame,
   createRng,
   GameError,
-  placeBet,
-  playCard,
-  resolveTrickCards,
   type GameState,
   type NewPlayer,
   type PlayedCard,
+  placeBet,
+  playCard,
+  resolveTrickCards,
 } from '../src/index.js';
 
 function makePlayers(count: number): NewPlayer[] {
@@ -27,7 +27,12 @@ function makePlayers(count: number): NewPlayer[] {
   }));
 }
 
-function played(seat: number, order: number, rank: Parameters<typeof createCard>[0], suit: Parameters<typeof createCard>[1]): PlayedCard {
+function played(
+  seat: number,
+  order: number,
+  rank: Parameters<typeof createCard>[0],
+  suit: Parameters<typeof createCard>[1],
+): PlayedCard {
   return { seat, order, card: createCard(rank, suit) };
 }
 

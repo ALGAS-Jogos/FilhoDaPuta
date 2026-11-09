@@ -144,7 +144,10 @@ Códigos usados:
 | `BAD_NAME` | nome vazio/longo |
 | `ROOM_NOT_FOUND` | código inexistente |
 | `ROOM_FULL` | sem assento |
+| `ROOM_LIMIT` | limite de salas do servidor |
 | `GAME_STARTED` | partida em andamento; use espectador |
+| `NOT_ENOUGH_PLAYERS` | menos de 2 jogadores |
+| `PLAYERS_DISCONNECTED` | alguém desconectado no lobby |
 | `NOT_HOST` | ação exclusiva do host |
 | `NOT_IN_GAME` | ação de jogo fora de partida |
 | `NOT_YOUR_TURN` | turno de outro jogador |
