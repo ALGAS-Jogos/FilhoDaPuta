@@ -55,7 +55,7 @@
 
   const statusLabel = (status: string): string => {
     if (status === 'online') {
-      return 'Servidor conectado';
+      return 'Conectado';
     }
     if (status === 'connecting') {
       return 'Conectando…';
@@ -72,7 +72,7 @@
           <span>♣</span><span class="red">♦</span><span class="red">♥</span><span>♠</span>
         </div>
         <h1>Manilha</h1>
-        <p>Cartas desenhadas em tempo real. De 2 a 6 jogadores.</p>
+        <p>Jogo de cartas pra jogar com os amigos. De 2 a 6 jogadores.</p>
       </div>
       <div class="brand-mark" aria-hidden="true">M</div>
     </div>
@@ -129,7 +129,6 @@
           Entrar
         </button>
       </div>
-      <span class="tiny muted">Deixe vazio e crie uma sala nova, ou abra um link de convite.</span>
     </div>
 
     <div class="home-actions">
@@ -142,7 +141,7 @@
         disabled={code.length !== 5}
         on:click={spectate}
       >
-        Assistir partida
+        Só assistir
       </button>
     </div>
 
@@ -153,10 +152,5 @@
       </span>
       <ThemePicker />
     </div>
-
-    <p class="tiny muted">
-      Ao entrar, você concorda em jogar em uma sala com estado autoritativo no servidor. Nenhuma
-      carta é enviada para quem não deve vê-la.
-    </p>
   </section>
 </main>

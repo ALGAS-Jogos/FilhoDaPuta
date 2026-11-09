@@ -96,7 +96,7 @@ describe('baralho', () => {
   });
 });
 
-describe('resolução de vaza', () => {
+describe('resolução de fez', () => {
   it('vence a menor carta', () => {
     const result = resolveTrickCards([
       played(1, 0, 'Q', 'clubs'),

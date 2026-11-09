@@ -61,7 +61,6 @@
     <section class="panel" style="padding: 1rem; display: grid; gap: 0.8rem;">
       <div class="row">
         <span class="badge badge-muted">Link de convite</span>
-        <span class="small muted">Quem abrir com a partida em andamento entra como espectador.</span>
       </div>
       <div class="invite">
         <code>{invite}</code>
@@ -90,13 +89,6 @@
               <span class="badge">você</span>
             {/if}
           </div>
-          <span class="tiny muted">
-            Assento {player.seat} · {player.isBot
-              ? 'bot'
-              : player.connected
-                ? 'conectado'
-                : 'offline'}
-          </span>
           {#if you.isHost && player.isBot}
             <button
               type="button"
@@ -112,7 +104,6 @@
       {#if you.isHost && players.length < room.maxPlayers}
         <button type="button" class="player-card" on:click={addBot}>
           <span class="player-name">+ Adicionar bot</span>
-          <span class="tiny muted">O bot aposta e joga sozinho.</span>
         </button>
       {/if}
     </section>
@@ -140,7 +131,6 @@
           <span class="small muted">Aguardando o host iniciar a partida…</span>
         {/if}
       </div>
-      <span class="small muted">Máximo de 6 assentos. A sala vive só na memória do servidor.</span>
     </footer>
   </main>
 {/if}

@@ -170,7 +170,7 @@ Códigos usados:
 ```
 lobby ──startGame──► betting ──todas as apostas──► playing
 playing ──todos jogaram──► trickEnd ──1,4 s──► playing
-playing ──última vaza──► roundEnd ──todos confirmam──► betting (nova rodada)
+playing ──último fez──► roundEnd ──todos confirmam──► betting (nova rodada)
 qualquer fase ──queda de vivo──► paused ──votação──► retomada
 roundEnd ──último vivo──► gameOver ──restart (host)──► lobby
 ```
@@ -178,5 +178,5 @@ roundEnd ──último vivo──► gameOver ──restart (host)──► lobb
 ## Espectadores
 
 - **Jogador morto**: recebe `allHands`; pode votar em pausas.
-- **Espectador externo**: `seat: null`; recebe apenas mesa, jogadores, apostas, vidas, vazas e resultados; não recebe `allHands`; não vota.
+- **Espectador externo**: `seat: null`; recebe apenas mesa, jogadores, apostas, vidas, fez e resultados; não recebe `allHands`; não vota.
 - Espectador externo pode entrar por link com a partida em andamento.

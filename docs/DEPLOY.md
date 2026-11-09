@@ -113,7 +113,7 @@ No navegador:
 2. crie uma sala;
 3. copie o link `/sala/CODIGO` e abra em outra janela;
 4. adicione bots, inicie e jogue uma rodada;
-5. abra o link em uma terceira janela e use **Assistir partida** para conferir a visão pública.
+5. abra o link em uma terceira janela e use **Só assistir** para conferir a visão pública.
 
 ## 6. Atualização
 

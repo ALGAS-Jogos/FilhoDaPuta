@@ -106,6 +106,9 @@ export class TableRenderer {
     this.canvas.addEventListener('pointerleave', this.handlePointerLeave);
     this.canvas.addEventListener('pointerdown', this.handlePointerDown);
     this.resize();
+    void document.fonts?.ready.then(() => {
+      this.cache.clear();
+    });
     this.running = true;
     this.frameHandle = requestAnimationFrame(this.frame);
   }
@@ -245,24 +248,26 @@ export class TableRenderer {
   private drawTableBackground(ctx: CanvasRenderingContext2D, layout: TableLayout): void {
     const { width, height, cx, cy } = layout;
     const theme = this.theme.canvas;
-    const gradient = ctx.createRadialGradient(cx, cy, 10, cx, cy, Math.max(width, height) * 0.8);
-    gradient.addColorStop(0, theme.table);
-    gradient.addColorStop(0.72, theme.table);
-    gradient.addColorStop(1, theme.tableEdge);
-    ctx.fillStyle = gradient;
+    ctx.fillStyle = theme.table;
     ctx.fillRect(0, 0, width, height);
 
     ctx.save();
+    ctx.strokeStyle = theme.tableEdge;
+    ctx.lineWidth = 10;
+    ctx.strokeRect(5, 5, width - 10, height - 10);
+
     ctx.strokeStyle = theme.tableLine;
-    ctx.lineWidth = 1;
+    ctx.lineWidth = 1.5;
     const rx = Math.min(width * 0.4, width / 2 - 48);
     const ry = (height - layout.bottomReserved - 70) * 0.34;
     ctx.beginPath();
     ctx.ellipse(cx, cy, rx, ry, 0, 0, Math.PI * 2);
     ctx.stroke();
+    ctx.setLineDash([9, 12]);
     ctx.beginPath();
     ctx.ellipse(cx, cy, rx * 0.62, ry * 0.58, 0, 0, Math.PI * 2);
     ctx.stroke();
+    ctx.setLineDash([]);
     ctx.restore();
 
     if (nowRecent(this.lifeFlashAt, performance.now(), 550)) {
@@ -348,31 +353,43 @@ export class TableRenderer {
     }
 
     const compact = this.width < 980;
+    const showLabel = !compact || seat.side === 'top';
     const labelWidth = compact
       ? Math.min(96, Math.max(62, this.width * 0.14))
       : Math.min(148, Math.max(92, this.width * 0.18));
     const labelHeight = compact ? 30 : 34;
     const labelX = seat.x - labelWidth / 2;
     const labelY = seat.y - labelHeight - 10;
-    roundRect(ctx, labelX, labelY, labelWidth, labelHeight, 9);
-    ctx.fillStyle = theme.panel;
-    ctx.globalAlpha = alpha * 0.92;
-    ctx.fill();
-    ctx.globalAlpha = alpha;
-    ctx.strokeStyle = turn ? theme.accent : theme.panelBorder;
-    ctx.lineWidth = turn ? 2 : 1;
-    if (turn) {
-      ctx.shadowColor = theme.accent;
-      ctx.shadowBlur = 12;
+
+    if (!showLabel) {
+      if (turn) {
+        ctx.fillStyle = theme.accent;
+        ctx.beginPath();
+        ctx.arc(seat.x, seat.y - 34, 4, 0, Math.PI * 2);
+        ctx.fill();
+      }
+      ctx.restore();
+      return;
     }
+
+    ctx.globalAlpha = alpha * 0.32;
+    ctx.fillStyle = theme.panelBorder;
+    roundRect(ctx, labelX + 3, labelY + 3, labelWidth, labelHeight, 8);
+    ctx.fill();
+
+    ctx.globalAlpha = alpha;
+    roundRect(ctx, labelX, labelY, labelWidth, labelHeight, 8);
+    ctx.fillStyle = theme.panel;
+    ctx.fill();
+    ctx.strokeStyle = turn ? theme.accent : theme.panelBorder;
+    ctx.lineWidth = turn ? 3 : 2;
     ctx.stroke();
-    ctx.shadowBlur = 0;
 
     ctx.font = `600 ${compact ? 10 : 11}px ${SANS}`;
     ctx.textAlign = 'left';
     ctx.textBaseline = 'middle';
     ctx.fillStyle = theme.text;
-    const suffix = compact ? '' : player.isBot ? ' · bot' : !player.connected ? ' · off' : '';
+    const suffix = compact || player.isBot ? '' : !player.connected ? ' · off' : '';
     const title = fitText(ctx, `${player.name}${suffix}`, labelWidth - 14);
     ctx.fillText(title, labelX + 7, labelY + (compact ? 9 : 11));
 
@@ -434,15 +451,13 @@ export class TableRenderer {
       ctx.font = `500 10px ${SANS}`;
       ctx.textAlign = 'center';
       ctx.textBaseline = 'top';
-      ctx.fillStyle = theme.textMuted;
+      ctx.fillStyle = theme.tableTextMuted;
       ctx.fillText(fitText(ctx, label, slot.w + 10), slot.cx, slot.cy + slot.h / 2 + 7);
 
       if (state.game?.lastTrick?.winnerSeat === slot.seat) {
         ctx.save();
         ctx.strokeStyle = theme.gold;
-        ctx.lineWidth = 2;
-        ctx.shadowColor = theme.gold;
-        ctx.shadowBlur = 10;
+        ctx.lineWidth = 3;
         roundRect(
           ctx,
           slot.cx - slot.w / 2 - 2,
@@ -542,12 +557,8 @@ export class TableRenderer {
         ctx.save();
         ctx.translate(cx, cy - lift);
         ctx.rotate(slot.rotation);
-        ctx.strokeStyle = selected ? theme.gold : 'rgba(255, 255, 255, 0.6)';
-        ctx.lineWidth = selected ? 2.5 : 1.5;
-        if (selected) {
-          ctx.shadowColor = theme.gold;
-          ctx.shadowBlur = 12;
-        }
+        ctx.strokeStyle = selected ? theme.gold : theme.tableText;
+        ctx.lineWidth = selected ? 3 : 1.5;
         roundRect(ctx, -slot.w / 2 - 2, -slot.h / 2 - 2, slot.w + 4, slot.h + 4, 7);
         ctx.stroke();
         ctx.restore();
@@ -581,9 +592,7 @@ export class TableRenderer {
     ctx.save();
     ctx.globalAlpha = Math.max(0.25, pulse);
     ctx.strokeStyle = theme.accent;
-    ctx.lineWidth = 2;
-    ctx.shadowColor = theme.accent;
-    ctx.shadowBlur = 14;
+    ctx.lineWidth = 3;
     ctx.beginPath();
     ctx.moveTo(x, y);
     ctx.lineTo(x + width, y);

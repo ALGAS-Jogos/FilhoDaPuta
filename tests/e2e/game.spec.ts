@@ -40,7 +40,7 @@ test('cria sala, adiciona bots, joga uma rodada e confirma', async ({ page }) =>
   await play.click();
 
   await expect(page.getByRole('heading', { name: 'Resultado' })).toBeVisible();
-  await expect(page.getByRole('button', { name: 'Confirmar e continuar' })).toBeVisible();
+  await expect(page.getByRole('button', { name: 'Confirmar' })).toBeVisible();
   expect(errors).toEqual([]);
 });
 
@@ -62,10 +62,10 @@ test('link da sala entra como espectador sem ver as mãos', async ({ page, brows
   await spectator.goto(`/sala/${code}`);
   await expect(spectator.locator('#room-code')).toHaveValue(code);
   await spectator.fill('#player-name', 'Olho');
-  await spectator.getByRole('button', { name: 'Assistir partida' }).click();
+  await spectator.getByRole('button', { name: 'Só assistir' }).click();
 
   await expect(spectator.getByText('assistindo').first()).toBeVisible();
-  await expect(spectator.getByText('Visão pública: as mãos ficam ocultas.')).toBeVisible();
+  await expect(spectator.getByText('Modo espectador: mãos ocultas.')).toBeVisible();
   await expect(spectator.locator('canvas')).toBeVisible();
   expect(errors).toEqual([]);
 

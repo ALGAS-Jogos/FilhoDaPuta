@@ -4,6 +4,7 @@
   import GameOverPanel from './GameOverPanel.svelte';
   import PausePanel from './PausePanel.svelte';
   import RoundPanel from './RoundPanel.svelte';
+  import Scoreboard from './Scoreboard.svelte';
   import ThemePicker from './ThemePicker.svelte';
   import { TableRenderer } from '../lib/render/renderer';
   import {
@@ -209,15 +210,16 @@
       ? 'Fim de jogo'
       : game?.phase === 'roundEnd'
         ? 'Fim da rodada'
-        : you?.canPlay
-          ? 'Sua vez de jogar'
-          : you?.canBet
-            ? 'Sua vez de apostar'
-            : game?.turnSeat !== null
-              ? `Vez de ${nameFor(game?.turnSeat, players)}`
-              : 'Aguardando…';
+        : game?.phase === 'trickEnd'
+          ? 'Resolvendo o fez'
+          : you?.canPlay
+            ? 'Sua vez de jogar'
+            : you?.canBet
+              ? 'Sua vez de apostar'
+              : game?.turnSeat !== null
+                ? `Vez de ${nameFor(game?.turnSeat, players)}`
+                : 'Aguardando…';
   $: announcement = buildAnnouncement($gameState, selectedCard);
-  $: turnName = nameFor(game?.turnSeat, players);
 </script>
 
 <svelte:window on:keydown={handleKey} />
@@ -228,43 +230,49 @@
   </div>
 
   <div class="table-ui">
-    <header class="topbar">
-      {#if room}
-        <span class="pill code">{room.code}</span>
-      {/if}
-      {#if game}
-        <span class="pill hide-mobile">
-          Rodada {game.round} · {game.cardsThisRound} carta{game.cardsThisRound === 1 ? '' : 's'}
-        </span>
-      {/if}
-      {#if self}
-        <span class="pill lives">{self.lives > 0 ? '♥' : '♡'} {self.lives}</span>
-      {/if}
-      {#if you?.isSpectator}
-        <span class="badge badge-muted">espectador</span>
-      {:else if you?.dead}
-        <span class="badge badge-danger">eliminado</span>
-      {/if}
-      <span class="spacer"></span>
-      <ThemePicker />
-      <button type="button" class="btn btn-small btn-ghost" on:click={leaveRoom}>Sair</button>
-    </header>
-
-    {#if game}
-      <div class="turn-banner" aria-live="polite">
-        <span>{bannerText}</span>
-        {#if remainingSec !== null}
-          <span class="timer-track" aria-hidden="true">
-            <span
-              class="timer-fill"
-              class:low={remainingSec <= 10}
-              style={`width: ${timerPct}%`}
-            ></span>
-          </span>
-          <strong>{remainingSec}s</strong>
+    <div class="table-header">
+      <header class="topbar">
+        {#if room}
+          <span class="pill code">{room.code}</span>
         {/if}
-      </div>
-    {/if}
+        {#if game}
+          <span class="pill hide-mobile">
+            Rodada {game.round} · {game.cardsThisRound} carta{game.cardsThisRound === 1 ? '' : 's'}
+          </span>
+        {/if}
+        {#if self}
+          <span class="pill lives">{self.lives > 0 ? '♥' : '♡'} {self.lives}</span>
+        {/if}
+        {#if you?.isSpectator}
+          <span class="badge badge-muted">espectador</span>
+        {:else if you?.dead}
+          <span class="badge badge-danger">eliminado</span>
+        {/if}
+        <span class="spacer"></span>
+        {#if game}
+          <span
+            class="pill turn-pill"
+            class:your-turn={you?.seat === game.turnSeat}
+            aria-live="polite"
+          >
+            <span>{bannerText}</span>
+            {#if remainingSec !== null}
+              <span class="timer-track" aria-hidden="true">
+                <span
+                  class="timer-fill"
+                  class:low={remainingSec <= 10}
+                  style={`width: ${timerPct}%`}
+                ></span>
+              </span>
+              <strong>{remainingSec}s</strong>
+            {/if}
+          </span>
+        {/if}
+        <ThemePicker />
+        <button type="button" class="btn btn-small btn-ghost" on:click={leaveRoom}>Sair</button>
+      </header>
+      <Scoreboard />
+    </div>
 
     {#if game && !room?.paused}
       {#if game.phase === 'betting' && you?.canBet}
@@ -313,19 +321,12 @@
       {:else if you?.dead}
         <div class="bottom-controls">
           <span class="badge badge-danger">eliminado</span>
-          <span class="small muted">Você vê todas as mãos. Assista até o fim.</span>
+          <span class="small muted">Você vê todas as mãos.</span>
         </div>
       {:else if you?.isSpectator}
         <div class="bottom-controls">
           <span class="badge badge-muted">assistindo</span>
-          <span class="small muted">Visão pública: as mãos ficam ocultas.</span>
-        </div>
-      {:else if game.phase !== 'roundEnd' && game.phase !== 'gameOver'}
-        <div class="bottom-controls">
-          <div class="control-label">
-            <strong>{turnName ? `Vez de ${turnName}` : 'Aguardando'}</strong>
-            <span>{game.phase === 'trickEnd' ? 'Resolvendo a vaza…' : 'Aguarde sua vez.'}</span>
-          </div>
+          <span class="small muted">Modo espectador: mãos ocultas.</span>
         </div>
       {/if}
     {/if}

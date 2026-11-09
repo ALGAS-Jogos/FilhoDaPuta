@@ -652,7 +652,7 @@ export class Room {
             clearTrick(this.state);
             this.afterChange(true);
           } catch (error) {
-            this.log('erro ao limpar vaza', error);
+            this.log('erro ao limpar fez', error);
           }
         }, TRICK_DISPLAY_MS),
       );

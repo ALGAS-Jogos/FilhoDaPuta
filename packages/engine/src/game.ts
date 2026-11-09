@@ -212,10 +212,10 @@ export function autoPlay(state: GameState, seat: number): void {
   playCard(state, seat, weakest.id);
 }
 
-/** Resolve uma vaza a partir das cartas jogadas; exposto para testes. */
+/** Resolve um fez a partir das cartas jogadas; exposto para testes. */
 export function resolveTrickCards(cards: PlayedCard[]): TrickResult {
   if (cards.length === 0) {
-    throw new GameError('EMPTY_TRICK', 'Vaza sem cartas.');
+    throw new GameError('EMPTY_TRICK', 'Fez sem cartas.');
   }
   const minimum = Math.min(...cards.map((played) => played.card.cardRank));
   const tied = cards.filter((played) => played.card.cardRank === minimum);
@@ -226,7 +226,7 @@ export function resolveTrickCards(cards: PlayedCard[]): TrickResult {
     }
   }
   if (!winner) {
-    throw new GameError('EMPTY_TRICK', 'Vaza sem vencedor.');
+    throw new GameError('EMPTY_TRICK', 'Fez sem vencedor.');
   }
   return {
     winnerSeat: winner.seat,

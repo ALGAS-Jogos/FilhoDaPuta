@@ -22,7 +22,7 @@ Node.js 22
 
 ## Princípios
 
-1. **O servidor é a única fonte de verdade.** O cliente não calcula vazas, vidas, apostas nem vencedores.
+1. **O servidor é a única fonte de verdade.** O cliente não calcula fez, vidas, apostas nem vencedores.
 2. **Projeção por audiência.** Cada jogador recebe apenas a própria mão. Jogador morto recebe todas as mãos. Espectador externo recebe apenas dados públicos.
 3. **Snapshots sequenciais.** Cada alteração gera um `state` com `seq`. O cliente ignora snapshots antigos e reconecta pedindo o estado atual.
 4. **Engine pura.** `packages/engine` não conhece rede, tempo, DOM nem HTTP. Recebe RNG e devolve estado/eventos. Isso permite testes determinísticos.
@@ -36,7 +36,7 @@ Node.js 22
 
 - `cards.ts`: baralho, naipes, ranks, manilhas.
 - `rng.ts`: `mulberry32` semeável e Fisher–Yates.
-- `game.ts`: máquina de estados, apostas, vazas, rodadas, vidas, morte, fim.
+- `game.ts`: máquina de estados, apostas, fez, rodadas, vidas, morte, fim.
 - `invariants.ts`: conservação de cartas e consistência.
 - Testes com partidas completas semeadas para 2–6 jogadores.
 

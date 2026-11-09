@@ -32,7 +32,7 @@ export interface GamePlayer {
 export interface PlayedCard {
   seat: number;
   card: Card;
-  /** Ordem de jogada dentro da vaza (0 = primeira). */
+  /** Ordem de jogada dentro do fez (0 = primeira). */
   order: number;
 }
 
@@ -64,7 +64,7 @@ export interface GameState {
   /** Cartas ainda não distribuídas. Nunca sai do servidor. */
   deck: Card[];
   table: PlayedCard[];
-  /** Cartas de vazas já recolhidas. */
+  /** Cartas de fez já recolhidas. */
   discard: Card[];
   lastTrick: TrickResult | null;
   lastRound: RoundResult | null;

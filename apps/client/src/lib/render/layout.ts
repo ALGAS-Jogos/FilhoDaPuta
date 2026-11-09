@@ -1,5 +1,5 @@
 import type { Card, PlayedCard, PublicPlayer, StateMessage } from '@manilha/protocol';
-import { CARD_RATIO } from './cards';
+import { CARD_RATIO } from './constants';
 
 export interface CardSlot {
   cardId: string;
@@ -54,8 +54,11 @@ export function computeLayout(view: StateMessage, width: number, height: number)
   const ownSeat = view.you.seat;
   const players = [...view.players].sort((a, b) => a.seat - b.seat);
   const ownHand = view.you.hand;
-  const bottomReserved = ownHand.length > 0 || view.you.dead ? clamp(94, 124, height * 0.145) : 28;
-  const topReserved = clamp(64, 88, height * 0.11);
+  const needsControls = view.you.canBet || view.you.canPlay;
+  const controlsReserve = clamp(94, 124, height * 0.145);
+  const bottomReserved = ownHand.length > 0 ? controlsReserve : 28;
+  const handReserved = ownHand.length > 0 && needsControls ? controlsReserve : 28;
+  const topReserved = clamp(112, 136, height * 0.16);
   const cx = width / 2;
   const cy = topReserved + (height - topReserved - bottomReserved) / 2;
   const rx = Math.max(80, Math.min(width * 0.39, width / 2 - 72));
@@ -72,9 +75,9 @@ export function computeLayout(view: StateMessage, width: number, height: number)
     ownHand.length === 0 ? 0 : clamp(48, 116, handArea / (1 + (handCount - 1) * (1 - overlap)));
   const handCardH = handCardW / CARD_RATIO;
   const handStep = ownHand.length <= 1 ? 0 : handCardW * (1 - overlap);
-  const handTotal = ownHand.length * handCardW + Math.max(0, ownHand.length - 1) * handStep;
+  const handTotal = handCardW + Math.max(0, ownHand.length - 1) * handStep;
   const handStart = cx - handTotal / 2 + handCardW / 2;
-  const handBaseY = height - bottomReserved - 12 - handCardH / 2;
+  const handBaseY = height - handReserved - 12 - handCardH / 2;
 
   const hand: CardSlot[] = ownHand.map((card, index) => {
     const mid = (ownHand.length - 1) / 2;
@@ -89,15 +92,16 @@ export function computeLayout(view: StateMessage, width: number, height: number)
     };
   });
 
-  const tableWidth =
-    tableCount * tableCardW + Math.max(0, tableCount - 1) * Math.max(6, tableCardW * 0.08);
+  const tableGap = Math.max(6, tableCardW * 0.08);
+  const tableStep = tableCardW + tableGap;
+  const tableWidth = tableCardW + Math.max(0, tableCount - 1) * tableStep;
   const tableStart = cx - tableWidth / 2 + tableCardW / 2;
   const table: PlayedSlot[] = (view.game?.table ?? []).map((played: PlayedCard, index) => ({
     cardId: played.card.id,
     card: played.card,
     seat: played.seat,
     order: played.order,
-    cx: tableStart + index * (tableCardW + Math.max(6, tableCardW * 0.08)),
+    cx: tableStart + index * tableStep,
     cy,
     w: tableCardW,
     h: tableCardH,
@@ -130,11 +134,11 @@ export function computeLayout(view: StateMessage, width: number, height: number)
 
     if (narrow && k >= 3) {
       if (index === 0) {
-        x = width * 0.13;
+        x = width * 0.07;
         y = cy - 10;
         side = 'left';
       } else if (index === k - 1) {
-        x = width * 0.87;
+        x = width * 0.93;
         y = cy - 10;
         side = 'right';
       } else {

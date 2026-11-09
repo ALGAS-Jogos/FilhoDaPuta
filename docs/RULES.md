@@ -76,22 +76,22 @@ O baralho é embaralhado no servidor a cada rodada. Não há cartas repetidas.
 - A soma total pode ser maior que o número de cartas; só a igualdade é proibida.
 - Depois da aposta do dealer, começa a fase de jogo.
 
-## 6. Jogo e vazas
+## 6. Jogo e fez
 
 - Não há obrigação de seguir naipe. Qualquer carta da mão é jogada válida.
 - A primeira jogada da rodada é do próximo jogador após o dealer.
-- Cada jogador joga exatamente uma carta por vaza.
-- Quando todos os jogadores vivos jogaram, a vaza é resolvida:
+- Cada jogador joga exatamente uma carta por fez.
+- Quando todos os jogadores vivos jogaram, o fez é resolvido:
   - vence a carta de menor `cardRank`;
   - se houver empate no menor rank, **vence a última carta jogada entre as empatadas**;
   - o empate é exibido como **“melou”**.
-- O vencedor da vaza abre a próxima vaza.
-- A mesa mostra as cartas jogadas por 1,4 s; depois o servidor limpa a mesa e começa a próxima vaza.
+- O vencedor do fez abre o próximo fez.
+- A mesa mostra as cartas jogadas por 1,4 s; depois o servidor limpa a mesa e começa o próximo fez.
 
 ## 7. Fim da rodada
 
-- A rodada termina depois de `cartas` vazas.
-- Cada jogador compara suas vazas ganhas com a própria aposta:
+- A rodada termina depois de `cartas` fez.
+- Cada jogador compara quantos fez ganhou com a própria aposta:
   - acertou → mantém as vidas;
   - errou → perde 1 vida.
 - Quem chega a 0 vidas morre e vira espectador.
@@ -134,14 +134,14 @@ O baralho é embaralhado no servidor a cada rodada. Não há cartas repetidas.
 ### Jogador morto
 
 - Permanece na sala.
-- Vê todas as mãos, apostas, vazas e resultados.
+- Vê todas as mãos, apostas, fez e resultados.
 - Não joga, mas vota em pausas.
 - Pode reconectar.
 
 ### Espectador externo (link)
 
 - Entra pelo link `/sala/CODIGO` mesmo com a partida em andamento.
-- Vê apenas informação pública: mesa, vazas, apostas, vidas, contagens e resultados.
+- Vê apenas informação pública: mesa, fez, apostas, vidas, contagens e resultados.
 - **Não vê as mãos dos jogadores.**
 - Não joga, não confirma e não vota.
 - Pode sair e reconectar.

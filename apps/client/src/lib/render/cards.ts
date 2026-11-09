@@ -1,11 +1,8 @@
 import type { Card, Suit } from '@manilha/protocol';
 import type { CanvasTheme } from './theme';
 
-export const CARD_RATIO = 500 / 726;
-
-const SANS =
-  'ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif';
-const SERIF = 'ui-serif, Georgia, "Times New Roman", serif';
+const DISPLAY =
+  '"Fredoka Variable", ui-rounded, "Trebuchet MS", ui-sans-serif, system-ui, sans-serif';
 
 const SUIT_COLOR: Record<Suit, 'ink' | 'red'> = {
   clubs: 'ink',
@@ -225,7 +222,7 @@ function drawCorner(
     ctx.translate(width * 0.075, height * 0.05);
   }
   ctx.fillStyle = suitColor(card.suit, theme);
-  ctx.font = `700 ${size}px ${SANS}`;
+  ctx.font = `600 ${size}px ${DISPLAY}`;
   ctx.textAlign = 'left';
   ctx.textBaseline = 'top';
   ctx.fillText(card.rank, 0, 0);
@@ -359,7 +356,7 @@ function drawCourt(
     ctx.fill();
   }
 
-  ctx.font = `700 ${height * 0.09}px ${SERIF}`;
+  ctx.font = `600 ${height * 0.09}px ${DISPLAY}`;
   ctx.textAlign = 'center';
   ctx.textBaseline = 'middle';
   ctx.fillStyle = theme.cardInk;
@@ -399,7 +396,7 @@ export function drawCardFace(
   ctx.fillStyle = theme.cardPaper;
   ctx.fill();
   ctx.strokeStyle = theme.cardBorder;
-  ctx.lineWidth = Math.max(1, height * 0.006);
+  ctx.lineWidth = Math.max(1.5, height * 0.008);
   ctx.stroke();
 
   roundRect(
@@ -501,7 +498,7 @@ export function drawCardBack(
   ctx.arc(0, 0, medalR * 0.82, 0, Math.PI * 2);
   ctx.fill();
   ctx.fillStyle = theme.backInk;
-  ctx.font = `700 ${medalR * 0.62}px ${SERIF}`;
+  ctx.font = `600 ${medalR * 0.62}px ${DISPLAY}`;
   ctx.textAlign = 'center';
   ctx.textBaseline = 'middle';
   ctx.fillText('M', 0, medalR * 0.04);

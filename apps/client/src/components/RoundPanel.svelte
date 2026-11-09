@@ -30,7 +30,7 @@
             <div class="result-row" class:self={result.seat === you.seat}>
               <span>{nameFor(result.seat)}</span>
               <span class="tiny muted">aposta {result.bet}</span>
-              <span class="tiny muted">{result.tricks} vaza{result.tricks === 1 ? '' : 's'}</span>
+              <span class="tiny muted">fez {result.tricks}</span>
               <span class:lost={result.lostLife} class:kept={!result.lostLife}>
                 {result.lostLife ? '−1 vida' : 'manteve'}
               </span>
@@ -40,15 +40,10 @@
         </div>
       {/if}
 
-      <p class="tiny muted">
-        A próxima rodada começa quando todos os jogadores vivos confirmarem. Jogadores mortos não
-        confirmam.
-      </p>
-
       <div class="modal-actions">
         {#if you.canConfirm}
           <button type="button" class="btn btn-primary" on:click={confirmRound}>
-            Confirmar e continuar
+            Confirmar
           </button>
         {:else if you.dead}
           <span class="small muted">Você está eliminado. Aguardando o fim da partida.</span>

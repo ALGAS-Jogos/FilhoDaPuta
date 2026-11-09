@@ -25,10 +25,7 @@
           <h2 id="pause-title">Um jogador caiu</h2>
         </div>
 
-        <p class="small muted">
-          A partida congelou. Os humanos conectados decidem se continuam com um bot no assento
-          desconectado ou se esperam a reconexão.
-        </p>
+        <p class="small muted">Continuar com um bot ou esperar a reconexão?</p>
 
         <div class="pause-note">
           Desconectado{pause.disconnectedSeats.length === 1 ? '' : 's'}:
@@ -50,8 +47,8 @@
         </div>
 
         <p class="tiny muted">
-          Maioria necessária: {pause.majority} de {pause.eligibleSeats.length} voto(s).
-          Continuar: {continueVotes} · Esperar: {waitVotes}.
+          Maioria: {pause.majority} de {pause.eligibleSeats.length} · continuar {continueVotes} ·
+          esperar {waitVotes}
         </p>
 
         {#if you.canVote}

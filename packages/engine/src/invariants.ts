@@ -85,12 +85,12 @@ export function assertInvariants(state: GameState): void {
       throw new Error('invariante: jogo começou com aposta pendente');
     }
     if (state.table.length >= active.length && active.length > 0) {
-      throw new Error('invariante: mesa cheia sem resolução de vaza');
+      throw new Error('invariante: mesa cheia sem resolução de fez');
     }
   }
 
   if (state.phase === 'trickEnd' && !state.lastTrick) {
-    throw new Error('invariante: fim de vaza sem resultado');
+    throw new Error('invariante: fim de fez sem resultado');
   }
 
   if ((state.phase === 'roundEnd' || state.phase === 'gameOver') && !state.lastRound) {
