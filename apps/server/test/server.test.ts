@@ -18,7 +18,7 @@ const config: AppConfig = {
   logLevel: 'silent',
   maxRooms: 20,
   roomTtlMs: 60_000,
-  clientDist: '/tmp/fdp-client-sem-build',
+  clientDist: '/tmp/manilha-client-sem-build',
   isDev: true,
   devSeed: 12345,
 };

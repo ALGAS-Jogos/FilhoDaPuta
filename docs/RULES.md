@@ -150,7 +150,7 @@ O baralho é embaralhado no servidor a cada rodada. Não há cartas repetidas.
 
 - Adicionados/removidos pelo host no lobby.
 - Apostam no menor valor válido.
-- Jogam uma carta aleatória legal.
+- Jogam a carta mais fraca da mão (maior `cardRank`).
 - Confirmam imediatamente.
 - Não votam, não pausam e não contam como humanos conectados.
 
