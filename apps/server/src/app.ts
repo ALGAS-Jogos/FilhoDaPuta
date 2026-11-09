@@ -52,16 +52,22 @@ export async function buildApp(config: AppConfig): Promise<FastifyInstance> {
       root: config.clientDist,
       prefix: '/',
     });
+  } else {
+    app.log.warn(
+      { clientDist: config.clientDist },
+      'Build do cliente não encontrada. Rode `npm run build` ou use o Vite em dev.',
+    );
   }
 
   app.setNotFoundHandler((request, reply) => {
     const url = request.raw.url ?? '/';
-    const isAsset = /\.[a-zA-Z0-9]+$/.test(url);
+    const pathname = url.split('?')[0] ?? '/';
+    const isAsset = /\.[a-zA-Z0-9]+$/.test(pathname) || pathname.startsWith('/assets/');
     if (
       hasClient &&
       request.method === 'GET' &&
-      !url.startsWith('/ws') &&
-      !url.startsWith('/healthz') &&
+      !pathname.startsWith('/ws') &&
+      !pathname.startsWith('/healthz') &&
       !isAsset
     ) {
       return reply.sendFile('index.html');

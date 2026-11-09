@@ -30,14 +30,19 @@ Abra `http://localhost:5173`.
 
 ```bash
 npm run typecheck  # TypeScript + svelte-check
-npm run test       # testes do engine e do servidor
+npm run test       # testes do engine, cliente e servidor
 npm run lint       # Biome
 npm run format     # Biome com escrita
 npm run verify     # lint + typecheck + testes
-npm run build      # cliente + servidor
-npm run start      # servidor de produção (serve o cliente)
+npm run build      # cliente Vite + servidor
+npm start          # build + servidor em http://localhost:3000
+npm run serve      # alias para npm start
+npm run start:server # só o servidor, usando a build existente
 npm run e2e        # Playwright local
 ```
+
+Em produção o próprio servidor Fastify serve `apps/client/dist` e faz fallback de SPA para
+`/sala/CODIGO`. Em desenvolvimento, use `dev:client` para o Vite com hot reload.
 
 Não há GitHub Actions. A verificação é local.
 

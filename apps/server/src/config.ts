@@ -1,4 +1,5 @@
 import { resolve } from 'node:path';
+import { fileURLToPath } from 'node:url';
 import { ROOM_TTL_MS } from '@manilha/protocol';
 
 export interface AppConfig {
@@ -31,7 +32,9 @@ export function loadConfig(env: NodeJS.ProcessEnv = process.env): AppConfig {
     logLevel: env.LOG_LEVEL ?? 'info',
     maxRooms: integer(env.MAX_ROOMS, 200),
     roomTtlMs: integer(env.ROOM_TTL_MS, ROOM_TTL_MS),
-    clientDist: resolve(process.cwd(), env.CLIENT_DIST ?? '../client/dist'),
+    clientDist: env.CLIENT_DIST
+      ? resolve(process.cwd(), env.CLIENT_DIST)
+      : fileURLToPath(new URL('../../client/dist', import.meta.url)),
     isDev: env.NODE_ENV !== 'production',
     devSeed: env.DEV_SEED ? integer(env.DEV_SEED, 1) : null,
   };
