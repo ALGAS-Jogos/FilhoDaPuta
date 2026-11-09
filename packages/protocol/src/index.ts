@@ -112,6 +112,7 @@ export const YouViewSchema = z.object({
   isSpectator: z.boolean(),
   dead: z.boolean(),
   hand: z.array(CardSchema),
+  hideOwnHand: z.boolean(),
   allHands: z
     .array(
       z.object({

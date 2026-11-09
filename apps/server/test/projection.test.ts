@@ -20,6 +20,13 @@ describe('projeção de estado', () => {
       room.addBot(1);
       room.startGame(1);
 
+      const firstRoundView = projectRoom(room, { kind: 'player', player: bia });
+      expect(firstRoundView.you.hideOwnHand).toBe(true);
+      expect(firstRoundView.you.hand.length).toBeGreaterThan(0);
+      expect(firstRoundView.you.allHands).not.toBeNull();
+      expect(firstRoundView.you.allHands?.some((entry) => entry.seat === ana.seat)).toBe(true);
+      expect(firstRoundView.you.allHands?.some((entry) => entry.seat === bia.seat)).toBe(false);
+
       const anaState = room.state?.players.find((player) => player.seat === ana.seat);
       expect(anaState).toBeDefined();
       if (anaState) {
@@ -37,7 +44,16 @@ describe('projeção de estado', () => {
       const liveView = projectRoom(room, { kind: 'player', player: bia });
       expect(liveView.you.dead).toBe(false);
       expect(liveView.you.hand.length).toBeGreaterThan(0);
-      expect(liveView.you.allHands).toBeNull();
+      expect(liveView.you.hideOwnHand).toBe(true);
+      expect(liveView.you.allHands).not.toBeNull();
+
+      if (room.state) {
+        room.state.round = 2;
+        room.state.phase = 'playing';
+      }
+      const normalView = projectRoom(room, { kind: 'player', player: bia });
+      expect(normalView.you.hideOwnHand).toBe(false);
+      expect(normalView.you.allHands).toBeNull();
 
       const spectatorView = projectRoom(room, {
         kind: 'spectator',

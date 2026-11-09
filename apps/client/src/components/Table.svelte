@@ -124,6 +124,11 @@
       return 'Fim da rodada. Confirme o resultado para continuar.';
     }
     if (state.you.canPlay) {
+      if (state.you.hideOwnHand) {
+        return selected
+          ? 'Sua vez. Carta virada selecionada.'
+          : 'Sua vez de jogar. Sua mão está virada.';
+      }
       return selected
         ? `Sua vez. Carta selecionada: ${cardLabel(selected)}.`
         : 'Sua vez de jogar.';
@@ -187,6 +192,7 @@
   $: selectedCard = selectedCardId
     ? you?.hand.find((card) => card.id === selectedCardId)
     : undefined;
+  $: hideOwnHand = you?.hideOwnHand ?? false;
   $: cardsThisRound = game?.cardsThisRound ?? 1;
   $: dealer = you?.seat !== null && game?.dealerSeat === you?.seat;
   $: othersBet = players
@@ -242,6 +248,9 @@
         {/if}
         {#if self}
           <span class="pill lives">{self.lives > 0 ? '♥' : '♡'} {self.lives}</span>
+        {/if}
+        {#if hideOwnHand}
+          <span class="badge badge-gold">mão virada</span>
         {/if}
         {#if you?.isSpectator}
           <span class="badge badge-muted">espectador</span>
@@ -306,8 +315,14 @@
       {:else if game.phase === 'playing' && you?.canPlay}
         <div class="bottom-controls">
           <div class="selected-card">
-            <strong>{selectedCard ? cardLabel(selectedCard) : 'Selecione uma carta'}</strong>
-            <span>{you.hand.length} na mão · toque na carta ou use 1–7</span>
+            <strong>
+              {hideOwnHand ? 'Carta virada' : selectedCard ? cardLabel(selectedCard) : 'Selecione uma carta'}
+            </strong>
+            <span>
+              {hideOwnHand
+                ? 'Primeira rodada: você vê as mãos dos outros'
+                : `${you.hand.length} na mão · toque na carta ou use 1–7`}
+            </span>
           </div>
           <button
             type="button"
@@ -338,7 +353,7 @@
           {#each you.hand as card, index (card.id)}
             <li>
               <button type="button" on:click={() => toggleCard(card.id)}>
-                {index + 1}. {cardLabel(card)}
+                {hideOwnHand ? `Carta ${index + 1} (virada)` : `${index + 1}. ${cardLabel(card)}`}
               </button>
             </li>
           {/each}

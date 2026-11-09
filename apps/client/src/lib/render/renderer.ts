@@ -1,5 +1,6 @@
 import type { Card, StateMessage } from '@manilha/protocol';
 import { CardArtCache, drawCardBitmap } from './cards';
+import { CARD_RATIO } from './constants';
 import {
   type CardSlot,
   computeLayout,
@@ -327,28 +328,31 @@ export class TableRenderer {
       }
     }
 
+    const revealCards = state.you.hideOwnHand && seat.faceUp;
     for (let index = 0; index < seat.hand.length; index += 1) {
       const slot = seat.hand[index];
       if (!slot) {
         continue;
       }
+      const cardW = revealCards ? clamp(52, 84, this.width * 0.075) : slot.w;
+      const cardH = revealCards ? cardW / CARD_RATIO : slot.h;
       let cx = slot.cx;
-      let cy = slot.cy;
+      let cy = revealCards ? seat.y + cardH / 2 - 6 : slot.cy;
       let cardAlpha = 1;
       if (this.dealAt > 0 && !this.reducedMotion && now - this.dealAt < 900) {
         const progress = clamp((now - this.dealAt - 150 - index * 28) / 320, 0, 1);
         const eased = easeOutCubic(progress);
         cx = lerp(this.layout?.cx ?? slot.cx, slot.cx, eased);
-        cy = lerp(this.layout?.cy ?? slot.cy, slot.cy, eased);
+        cy = lerp(this.layout?.cy ?? slot.cy, cy, eased);
         cardAlpha = eased;
       }
       const card = slot.cardId ? faceCards.get(slot.cardId) : undefined;
       if (seat.faceUp && card) {
-        const cached = this.cache.getFace(card, slot.w, slot.h, theme, this.dpr);
-        drawCardBitmap(ctx, cached, cx, cy, slot.w, slot.h, 0, cardAlpha);
+        const cached = this.cache.getFace(card, cardW, cardH, theme, this.dpr);
+        drawCardBitmap(ctx, cached, cx, cy, cardW, cardH, 0, cardAlpha);
       } else {
-        const cached = this.cache.getBack(slot.w, slot.h, theme, this.dpr);
-        drawCardBitmap(ctx, cached, cx, cy, slot.w, slot.h, 0, cardAlpha);
+        const cached = this.cache.getBack(cardW, cardH, theme, this.dpr);
+        drawCardBitmap(ctx, cached, cx, cy, cardW, cardH, 0, cardAlpha);
       }
     }
 
@@ -550,7 +554,9 @@ export class TableRenderer {
       const selected = slot.cardId === this.selectedCardId;
       const hovered = slot.cardId === this.hoverCardId;
       const lift = selected ? 18 : hovered ? 7 : 0;
-      const cached = this.cache.getFace(card, slot.w, slot.h, theme, this.dpr);
+      const cached = state.you.hideOwnHand
+        ? this.cache.getBack(slot.w, slot.h, theme, this.dpr)
+        : this.cache.getFace(card, slot.w, slot.h, theme, this.dpr);
       drawCardBitmap(ctx, cached, cx, cy - lift, slot.w, slot.h, slot.rotation, alpha);
 
       if (selected || hovered) {

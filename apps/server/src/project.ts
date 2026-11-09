@@ -79,6 +79,7 @@ export function projectRoom(room: Room, viewer: ProjectionViewer): StateMessage 
       isSpectator: true,
       dead: false,
       hand: [],
+      hideOwnHand: false,
       allHands: null,
       canBet: false,
       canPlay: false,
@@ -87,6 +88,13 @@ export function projectRoom(room: Room, viewer: ProjectionViewer): StateMessage 
     };
   } else {
     const isDead = enginePlayer?.dead ?? false;
+    const firstRoundReveal = Boolean(
+      state &&
+        state.round === 1 &&
+        (state.phase === 'betting' || state.phase === 'playing') &&
+        enginePlayer &&
+        !enginePlayer.dead,
+    );
     const canAct = !room.paused && !viewer.player.isBot && viewer.player.connected;
     you = {
       playerId: viewer.player.id,
@@ -96,12 +104,17 @@ export function projectRoom(room: Room, viewer: ProjectionViewer): StateMessage 
       isSpectator: false,
       dead: isDead,
       hand: enginePlayer?.hand ?? [],
+      hideOwnHand: firstRoundReveal,
       allHands:
         isDead && state
           ? state.players
               .filter((candidate) => !candidate.dead)
               .map((candidate) => ({ seat: candidate.seat, cards: candidate.hand }))
-          : null,
+          : firstRoundReveal && state
+            ? state.players
+                .filter((candidate) => !candidate.dead && candidate.seat !== viewer.player.seat)
+                .map((candidate) => ({ seat: candidate.seat, cards: candidate.hand }))
+            : null,
       canBet:
         canAct && state?.phase === 'betting' && state.turnSeat === viewer.player.seat && !isDead,
       canPlay:

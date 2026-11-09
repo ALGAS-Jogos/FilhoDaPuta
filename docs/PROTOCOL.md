@@ -110,6 +110,7 @@ O token deve ser guardado pelo cliente. Não é reenviado em snapshots.
     "isSpectator": false,
     "dead": false,
     "hand": [],
+    "hideOwnHand": false,
     "allHands": null,
     "canBet": false,
     "canPlay": true,
@@ -125,8 +126,9 @@ Campos relevantes:
 - `serverNow`: para calcular offset do relógio local.
 - `deadline`: timestamp absoluto do timer atual; `null` se pausado/sem timer.
 - `players`: todos os assentos, inclusive mortos.
-- `you.hand`: apenas a mão do próprio jogador.
-- `you.allHands`: apenas para jogador morto (visão geral).
+- `you.hand`: a mão do próprio jogador. Na primeira rodada ela é enviada, mas o cliente a desenha virada.
+- `you.hideOwnHand`: `true` na primeira rodada; o cliente esconde o valor da própria mão.
+- `you.allHands`: para jogador morto (visão geral) ou primeiros turnos da rodada 1 (mãos dos adversários, sem a própria).
 - `you.isSpectator`: espectador externo; `seat` é `null`; nunca recebe mãos.
 - `room.pause`: presente durante votação.
 

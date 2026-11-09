@@ -68,6 +68,7 @@ function makeState(handSize: number, tableSize: number): StateMessage {
       isSpectator: false,
       dead: false,
       hand,
+      hideOwnHand: false,
       allHands: null,
       canBet: false,
       canPlay: true,

@@ -23,7 +23,7 @@ Node.js 22
 ## Princípios
 
 1. **O servidor é a única fonte de verdade.** O cliente não calcula fez, vidas, apostas nem vencedores.
-2. **Projeção por audiência.** Cada jogador recebe apenas a própria mão. Jogador morto recebe todas as mãos. Espectador externo recebe apenas dados públicos.
+2. **Projeção por audiência.** Cada jogador recebe apenas a própria mão, exceto na rodada 1, quando vê as mãos dos adversários e joga a própria carta virada. Jogador morto recebe todas as mãos. Espectador externo recebe apenas dados públicos.
 3. **Snapshots sequenciais.** Cada alteração gera um `state` com `seq`. O cliente ignora snapshots antigos e reconecta pedindo o estado atual.
 4. **Engine pura.** `packages/engine` não conhece rede, tempo, DOM nem HTTP. Recebe RNG e devolve estado/eventos. Isso permite testes determinísticos.
 5. **Sem predição.** O cliente anima depois da confirmação do servidor. A latência de uma LAN/VPS é irrelevante para este jogo.

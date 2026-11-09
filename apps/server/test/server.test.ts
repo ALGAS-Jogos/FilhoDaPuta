@@ -218,12 +218,16 @@ afterEach(async () => {
 });
 
 describe('servidor autoritativo', () => {
-  it('mantém a mão privada e entrega visão pública ao espectador', async () => {
+  it('revela oponentes na primeira rodada e entrega visão pública ao espectador', async () => {
     const { aState, bState } = await startRoom();
 
     expect(aState.you.hand.length + bState.you.hand.length).toBeGreaterThan(0);
-    expect(aState.you.allHands).toBeNull();
-    expect(bState.you.allHands).toBeNull();
+    expect(aState.you.hideOwnHand).toBe(true);
+    expect(bState.you.hideOwnHand).toBe(true);
+    expect(aState.you.allHands?.some((entry) => entry.seat === bState.you.seat)).toBe(true);
+    expect(aState.you.allHands?.some((entry) => entry.seat === aState.you.seat)).toBe(false);
+    expect(bState.you.allHands?.some((entry) => entry.seat === aState.you.seat)).toBe(true);
+    expect(bState.you.allHands?.some((entry) => entry.seat === bState.you.seat)).toBe(false);
 
     const spectator = newClient();
     await spectator.open();

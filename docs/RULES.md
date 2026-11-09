@@ -88,6 +88,13 @@ O baralho é embaralhado no servidor a cada rodada. Não há cartas repetidas.
 - O vencedor do fez abre o próximo fez.
 - A mesa mostra as cartas jogadas por 1,4 s; depois o servidor limpa a mesa e começa o próximo fez.
 
+## 6.1 Primeira rodada
+
+- Na rodada 1, cada jogador vê as mãos dos adversários, mas **não vê a própria mão**.
+- A própria mão é exibida virada; a única carta da rodada é jogada às cegas.
+- A partir da rodada 2, a visão volta ao normal: o jogador vê a própria mão e não vê as dos outros.
+- O servidor continua conhecendo todas as cartas e validando a jogada; a inversão é de visibilidade.
+
 ## 7. Fim da rodada
 
 - A rodada termina depois de `cartas` fez.
