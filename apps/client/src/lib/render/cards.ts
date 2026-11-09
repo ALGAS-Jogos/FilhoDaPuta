@@ -258,6 +258,202 @@ function drawAce(
   drawSuit(ctx, card.suit, width * 0.5, height * 0.5, height * 0.34, suitColor(card.suit, theme));
 }
 
+function drawCrown(
+  ctx: CanvasRenderingContext2D,
+  cx: number,
+  baseY: number,
+  width: number,
+  height: number,
+  theme: CanvasTheme,
+  queen: boolean,
+): void {
+  const left = cx - width / 2;
+  const right = cx + width / 2;
+  const path = new Path2D();
+
+  if (queen) {
+    path.moveTo(left, baseY);
+    path.lineTo(left, baseY - height * 0.42);
+    path.lineTo(cx - width * 0.28, baseY - height * 0.13);
+    path.lineTo(cx - width * 0.14, baseY - height * 0.78);
+    path.lineTo(cx, baseY - height * 0.3);
+    path.lineTo(cx + width * 0.14, baseY - height * 0.78);
+    path.lineTo(cx + width * 0.28, baseY - height * 0.13);
+    path.lineTo(right, baseY - height * 0.42);
+  } else {
+    path.moveTo(left, baseY);
+    path.lineTo(left, baseY - height * 0.5);
+    path.lineTo(left + width * 0.18, baseY - height * 0.18);
+    path.lineTo(left + width * 0.3, baseY - height * 0.85);
+    path.lineTo(cx, baseY - height * 0.35);
+    path.lineTo(right - width * 0.3, baseY - height * 0.85);
+    path.lineTo(right - width * 0.18, baseY - height * 0.18);
+    path.lineTo(right, baseY - height * 0.5);
+  }
+  path.lineTo(right, baseY);
+  path.closePath();
+
+  ctx.save();
+  ctx.fillStyle = theme.gold;
+  ctx.strokeStyle = theme.cardInk;
+  ctx.lineWidth = Math.max(1, height * 0.018);
+  ctx.fill(path);
+  ctx.stroke(path);
+
+  const bandY = baseY - height * 0.2;
+  roundRect(ctx, left, bandY, width, height * 0.2, height * 0.025);
+  ctx.fillStyle = theme.gold;
+  ctx.fill();
+  ctx.strokeStyle = theme.cardInk;
+  ctx.lineWidth = Math.max(1, height * 0.014);
+  ctx.stroke();
+
+  const pearls: Array<[number, number]> = queen
+    ? [
+        [left, baseY - height * 0.42],
+        [cx, baseY - height * 0.3],
+        [right, baseY - height * 0.42],
+      ]
+    : [
+        [left, baseY - height * 0.5],
+        [left + width * 0.3, baseY - height * 0.85],
+        [cx, baseY - height * 0.35],
+        [right - width * 0.3, baseY - height * 0.85],
+        [right, baseY - height * 0.5],
+      ];
+
+  for (const [x, y] of pearls) {
+    ctx.beginPath();
+    ctx.arc(x, y, height * 0.028, 0, Math.PI * 2);
+    ctx.fillStyle = theme.cardPaper;
+    ctx.fill();
+    ctx.strokeStyle = theme.cardInk;
+    ctx.lineWidth = Math.max(1, height * 0.01);
+    ctx.stroke();
+  }
+
+  ctx.fillStyle = theme.cardPaper;
+  for (let index = -1; index <= 1; index += 1) {
+    ctx.beginPath();
+    ctx.arc(cx + index * width * 0.18, bandY + height * 0.09, height * 0.018, 0, Math.PI * 2);
+    ctx.fill();
+  }
+  ctx.restore();
+}
+
+function drawSword(
+  ctx: CanvasRenderingContext2D,
+  fromX: number,
+  fromY: number,
+  toX: number,
+  toY: number,
+  height: number,
+  theme: CanvasTheme,
+): void {
+  const dx = toX - fromX;
+  const dy = toY - fromY;
+  const length = Math.hypot(dx, dy);
+  const angle = Math.atan2(dy, dx) + Math.PI / 2;
+  const bladeWidth = height * 0.065;
+  const outline = Math.max(1, height * 0.012);
+
+  ctx.save();
+  ctx.translate(fromX, fromY);
+  ctx.rotate(angle);
+
+  ctx.beginPath();
+  ctx.moveTo(0, -length);
+  ctx.lineTo(bladeWidth * 0.5, -length * 0.86);
+  ctx.lineTo(bladeWidth * 0.5, -height * 0.035);
+  ctx.lineTo(-bladeWidth * 0.5, -height * 0.035);
+  ctx.lineTo(-bladeWidth * 0.5, -length * 0.86);
+  ctx.closePath();
+  ctx.fillStyle = theme.cardPaper;
+  ctx.fill();
+  ctx.fillStyle = theme.cardInk;
+  ctx.globalAlpha = 0.14;
+  ctx.fill();
+  ctx.globalAlpha = 1;
+  ctx.strokeStyle = theme.cardInk;
+  ctx.lineWidth = outline;
+  ctx.stroke();
+
+  ctx.beginPath();
+  ctx.moveTo(0, -length * 0.88);
+  ctx.lineTo(0, -height * 0.05);
+  ctx.strokeStyle = theme.cardInk;
+  ctx.globalAlpha = 0.35;
+  ctx.lineWidth = Math.max(1, height * 0.008);
+  ctx.stroke();
+  ctx.globalAlpha = 1;
+
+  roundRect(
+    ctx,
+    -bladeWidth * 1.8,
+    -height * 0.048,
+    bladeWidth * 3.6,
+    height * 0.034,
+    height * 0.012,
+  );
+  ctx.fillStyle = theme.gold;
+  ctx.fill();
+  ctx.strokeStyle = theme.cardInk;
+  ctx.lineWidth = outline;
+  ctx.stroke();
+
+  roundRect(ctx, -bladeWidth * 0.45, height * 0.0, bladeWidth * 0.9, height * 0.11, height * 0.018);
+  ctx.fillStyle = theme.cardInk;
+  ctx.fill();
+
+  ctx.beginPath();
+  ctx.arc(0, height * 0.125, bladeWidth * 0.55, 0, Math.PI * 2);
+  ctx.fillStyle = theme.gold;
+  ctx.fill();
+  ctx.strokeStyle = theme.cardInk;
+  ctx.lineWidth = outline;
+  ctx.stroke();
+
+  ctx.restore();
+}
+
+function drawShield(
+  ctx: CanvasRenderingContext2D,
+  card: Card,
+  cx: number,
+  cy: number,
+  width: number,
+  height: number,
+  theme: CanvasTheme,
+): void {
+  const left = cx - width / 2;
+  const right = cx + width / 2;
+  const top = cy - height / 2;
+  const bottom = cy + height / 2;
+  const path = new Path2D();
+  path.moveTo(left, top);
+  path.lineTo(right, top);
+  path.lineTo(right, top + height * 0.35);
+  path.quadraticCurveTo(right, bottom - height * 0.16, cx, bottom);
+  path.quadraticCurveTo(left, bottom - height * 0.16, left, top + height * 0.35);
+  path.closePath();
+
+  ctx.save();
+  ctx.fillStyle = suitColor(card.suit, theme);
+  ctx.strokeStyle = theme.gold;
+  ctx.lineWidth = Math.max(1.5, height * 0.026);
+  ctx.fill(path);
+  ctx.stroke(path);
+
+  ctx.strokeStyle = theme.cardPaper;
+  ctx.globalAlpha = 0.75;
+  ctx.lineWidth = Math.max(1, height * 0.012);
+  ctx.stroke(path);
+  ctx.globalAlpha = 1;
+
+  drawSuit(ctx, card.suit, cx, cy - height * 0.02, height * 0.2, theme.cardPaper);
+  ctx.restore();
+}
+
 function drawCourt(
   ctx: CanvasRenderingContext2D,
   card: Card,
@@ -278,90 +474,16 @@ function drawCourt(
   ctx.stroke();
 
   const centerX = width * 0.5;
-  const headY = height * 0.37;
-  const headR = height * 0.07;
-  const isRed = suitColor(card.suit, theme) === theme.cardRed;
-  const cloth = isRed ? theme.cardRed : theme.accent;
-
-  ctx.fillStyle = cloth;
-  ctx.beginPath();
-  ctx.moveTo(width * 0.26, height * 0.77);
-  ctx.quadraticCurveTo(centerX, height * 0.52, width * 0.74, height * 0.77);
-  ctx.closePath();
-  ctx.fill();
-
-  ctx.fillStyle = theme.cardPaper;
-  ctx.strokeStyle = theme.cardInk;
-  ctx.lineWidth = Math.max(1, height * 0.004);
-  ctx.beginPath();
-  ctx.arc(centerX, headY, headR, 0, Math.PI * 2);
-  ctx.fill();
-  ctx.stroke();
-
-  ctx.fillStyle = theme.cardInk;
-  ctx.beginPath();
-  ctx.arc(centerX - headR * 0.28, headY - headR * 0.1, headR * 0.09, 0, Math.PI * 2);
-  ctx.arc(centerX + headR * 0.28, headY - headR * 0.1, headR * 0.09, 0, Math.PI * 2);
-  ctx.fill();
-
-  ctx.strokeStyle = theme.cardInk;
-  ctx.lineWidth = Math.max(1, height * 0.006);
-  ctx.beginPath();
-  ctx.arc(centerX, headY + headR * 0.2, headR * 0.45, 0.15 * Math.PI, 0.85 * Math.PI);
-  ctx.stroke();
 
   if (card.rank === 'K') {
-    ctx.fillStyle = theme.gold;
-    ctx.beginPath();
-    ctx.moveTo(centerX - headR * 0.9, headY - headR * 0.95);
-    ctx.lineTo(centerX - headR * 0.55, headY - headR * 1.55);
-    ctx.lineTo(centerX - headR * 0.15, headY - headR * 1.1);
-    ctx.lineTo(centerX + headR * 0.2, headY - headR * 1.7);
-    ctx.lineTo(centerX + headR * 0.55, headY - headR * 1.1);
-    ctx.lineTo(centerX + headR * 0.9, headY - headR * 1.55);
-    ctx.lineTo(centerX + headR * 0.75, headY - headR * 0.8);
-    ctx.closePath();
-    ctx.fill();
+    drawSword(ctx, width * 0.28, height * 0.68, width * 0.78, height * 0.22, height, theme);
+    drawCrown(ctx, width * 0.44, height * 0.6, width * 0.32, height * 0.3, theme, false);
   } else if (card.rank === 'Q') {
-    ctx.fillStyle = theme.gold;
-    ctx.beginPath();
-    ctx.arc(centerX, headY - headR * 1.05, headR * 0.25, 0, Math.PI * 2);
-    ctx.fill();
-    ctx.beginPath();
-    ctx.moveTo(centerX - headR * 0.85, headY - headR * 0.8);
-    ctx.quadraticCurveTo(
-      centerX,
-      headY - headR * 1.35,
-      centerX + headR * 0.85,
-      headY - headR * 0.8,
-    );
-    ctx.quadraticCurveTo(centerX, headY - headR * 0.6, centerX - headR * 0.85, headY - headR * 0.8);
-    ctx.fill();
+    drawCrown(ctx, centerX, height * 0.64, width * 0.4, height * 0.36, theme, true);
   } else {
-    ctx.fillStyle = theme.gold;
-    ctx.beginPath();
-    ctx.moveTo(centerX + headR * 0.45, headY - headR * 0.85);
-    ctx.quadraticCurveTo(
-      centerX + headR * 1.4,
-      headY - headR * 1.7,
-      centerX + headR * 1.15,
-      headY - headR * 0.45,
-    );
-    ctx.quadraticCurveTo(
-      centerX + headR * 0.9,
-      headY - headR * 0.4,
-      centerX + headR * 0.45,
-      headY - headR * 0.85,
-    );
-    ctx.fill();
+    drawSword(ctx, width * 0.74, height * 0.66, width * 0.24, height * 0.22, height, theme);
+    drawShield(ctx, card, width * 0.47, height * 0.49, width * 0.3, height * 0.32, theme);
   }
-
-  ctx.font = `600 ${height * 0.09}px ${DISPLAY}`;
-  ctx.textAlign = 'center';
-  ctx.textBaseline = 'middle';
-  ctx.fillStyle = theme.cardInk;
-  ctx.fillText(card.rank, centerX, height * 0.72);
-  drawSuit(ctx, card.suit, centerX, height * 0.785, height * 0.055, suitColor(card.suit, theme));
 }
 
 function drawManilhaBadge(
