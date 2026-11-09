@@ -1,0 +1,20 @@
+{
+  "name": "@fdp/protocol",
+  "version": "2.0.0",
+  "private": true,
+  "description": "Contratos Zod do Filho da Puta",
+  "license": "GPL-3.0-or-later",
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "scripts": {
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "zod": "4.6.7"
+  },
+  "devDependencies": {
+    "typescript": "5.9.3"
+  }
+}

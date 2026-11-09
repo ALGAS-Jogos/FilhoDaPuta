@@ -1,0 +1,19 @@
+{
+  "name": "@fdp/engine",
+  "version": "2.0.0",
+  "private": true,
+  "description": "Regras puras do Filho da Puta",
+  "license": "GPL-3.0-or-later",
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "scripts": {
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run"
+  },
+  "devDependencies": {
+    "typescript": "5.9.3",
+    "vitest": "5.1.0"
+  }
+}

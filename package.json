@@ -1,0 +1,33 @@
+{
+  "name": "filho-da-puta",
+  "version": "2.0.0",
+  "private": true,
+  "description": "Filho da Puta — jogo de cartas multiplayer com servidor autoritativo e Canvas 2D procedural",
+  "license": "GPL-3.0-or-later",
+  "type": "module",
+  "workspaces": [
+    "packages/*",
+    "apps/*"
+  ],
+  "engines": {
+    "node": ">=22.12"
+  },
+  "scripts": {
+    "dev:server": "npm run dev -w @fdp/server",
+    "dev:client": "npm run dev -w @fdp/client",
+    "build": "npm run build -w @fdp/client && npm run build -w @fdp/server",
+    "start": "npm run start -w @fdp/server",
+    "typecheck": "npm run typecheck --workspaces --if-present",
+    "test": "npm run test -w @fdp/engine && npm run test -w @fdp/server",
+    "lint": "biome check .",
+    "format": "biome check --write .",
+    "verify": "biome check . && npm run typecheck && npm run test",
+    "e2e": "playwright test"
+  },
+  "devDependencies": {
+    "@biomejs/biome": "2.6.6",
+    "@playwright/test": "1.65.0",
+    "@types/node": "22.19.11",
+    "typescript": "5.9.3"
+  }
+}
