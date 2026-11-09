@@ -1,4 +1,4 @@
-# Regras do Filho da Puta
+# Regras de Manilha
 
 Versão 2 (web). Este documento é a fonte de verdade para o engine e para os testes.
 

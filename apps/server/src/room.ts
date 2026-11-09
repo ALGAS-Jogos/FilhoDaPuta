@@ -11,7 +11,7 @@ import {
   placeBet,
   playCard,
   type Rng,
-} from '@fdp/engine';
+} from '@manilha/engine';
 import {
   CONFIRM_MS,
   MAX_PLAYERS,
@@ -19,7 +19,7 @@ import {
   TRICK_DISPLAY_MS,
   TURN_MS,
   type VoteChoice,
-} from '@fdp/protocol';
+} from '@manilha/protocol';
 import type { WebSocket } from 'ws';
 import { ServerError } from './errors.js';
 import { projectRoom } from './project.js';

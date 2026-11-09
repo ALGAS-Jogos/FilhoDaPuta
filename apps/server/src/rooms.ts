@@ -1,5 +1,5 @@
 import { randomBytes, randomInt } from 'node:crypto';
-import { ROOM_CODE_LENGTH, ROOM_TTL_MS } from '@fdp/protocol';
+import { ROOM_CODE_LENGTH, ROOM_TTL_MS } from '@manilha/protocol';
 import { ServerError } from './errors.js';
 import { Room } from './room.js';
 

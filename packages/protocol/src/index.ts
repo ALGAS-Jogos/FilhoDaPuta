@@ -13,6 +13,9 @@ export const ROOM_TTL_MS = 30 * 60 * 1000;
 export const SUITS = ['clubs', 'diamonds', 'hearts', 'spades'] as const;
 export const RANKS = ['A', '2', '3', '4', '5', '6', '7', 'J', 'Q', 'K'] as const;
 
+export type Suit = (typeof SUITS)[number];
+export type Rank = (typeof RANKS)[number];
+
 export const CardSchema = z.object({
   id: z.string(),
   suit: z.enum(SUITS),

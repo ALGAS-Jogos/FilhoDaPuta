@@ -1,8 +1,8 @@
 {
-  "name": "filho-da-puta",
+  "name": "manilha",
   "version": "2.0.0",
   "private": true,
-  "description": "Filho da Puta — jogo de cartas multiplayer com servidor autoritativo e Canvas 2D procedural",
+  "description": "Manilha — jogo de cartas multiplayer com servidor autoritativo e Canvas 2D procedural",
   "license": "GPL-3.0-or-later",
   "type": "module",
   "workspaces": [
@@ -13,12 +13,12 @@
     "node": ">=22.12"
   },
   "scripts": {
-    "dev:server": "npm run dev -w @fdp/server",
-    "dev:client": "npm run dev -w @fdp/client",
-    "build": "npm run build -w @fdp/client && npm run build -w @fdp/server",
-    "start": "npm run start -w @fdp/server",
+    "dev:server": "npm run dev -w @manilha/server",
+    "dev:client": "npm run dev -w @manilha/client",
+    "build": "npm run build -w @manilha/client && npm run build -w @manilha/server",
+    "start": "npm run start -w @manilha/server",
     "typecheck": "npm run typecheck --workspaces --if-present",
-    "test": "npm run test -w @fdp/engine && npm run test -w @fdp/server",
+    "test": "npm run test -w @manilha/engine && npm run test -w @manilha/server",
     "lint": "biome check .",
     "format": "biome check --write .",
     "verify": "biome check . && npm run typecheck && npm run test",

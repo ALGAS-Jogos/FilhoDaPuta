@@ -1,8 +1,8 @@
 {
-  "name": "@fdp/engine",
+  "name": "@manilha/engine",
   "version": "2.0.0",
   "private": true,
-  "description": "Regras puras do Filho da Puta",
+  "description": "Regras puras de Manilha",
   "license": "GPL-3.0-or-later",
   "type": "module",
   "exports": {

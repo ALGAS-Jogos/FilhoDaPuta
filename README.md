@@ -1,4 +1,4 @@
-# Filho da Puta
+# Manilha
 
 Jogo de cartas multiplayer (2 a 6 jogadores) com:
 

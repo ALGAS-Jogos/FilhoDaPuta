@@ -6,7 +6,7 @@ import {
   type PongMessage,
   type ServerMessage,
   type WelcomeMessage,
-} from '@fdp/protocol';
+} from '@manilha/protocol';
 import type { FastifyInstance } from 'fastify';
 import type { WebSocket } from 'ws';
 import type { AppConfig } from './config.js';

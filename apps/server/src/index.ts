@@ -8,7 +8,7 @@ try {
   await app.listen({ port: config.port, host: config.host });
   app.log.info(
     { port: config.port, host: config.host, clientDist: config.clientDist },
-    'Filho da Puta no ar',
+    'Manilha no ar',
   );
 } catch (error) {
   app.log.error(error);

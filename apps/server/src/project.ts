@@ -1,4 +1,4 @@
-import { STARTING_LIVES } from '@fdp/engine';
+import { STARTING_LIVES } from '@manilha/engine';
 import {
   type GameView,
   MAX_PLAYERS,
@@ -6,7 +6,7 @@ import {
   type RoomView,
   type StateMessage,
   type YouView,
-} from '@fdp/protocol';
+} from '@manilha/protocol';
 import type { Room, RoomPlayer, RoomSpectator } from './room.js';
 
 export type ProjectionViewer =

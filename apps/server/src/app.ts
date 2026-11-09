@@ -2,7 +2,7 @@ import { existsSync } from 'node:fs';
 import { join } from 'node:path';
 import fastifyStatic from '@fastify/static';
 import fastifyWebsocket from '@fastify/websocket';
-import { MAX_MESSAGE_BYTES } from '@fdp/protocol';
+import { MAX_MESSAGE_BYTES } from '@manilha/protocol';
 import Fastify, { type FastifyInstance } from 'fastify';
 import type { AppConfig } from './config.js';
 import { RoomManager } from './rooms.js';

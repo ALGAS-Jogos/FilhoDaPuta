@@ -1,4 +1,4 @@
-import type { ErrorCode } from '@fdp/protocol';
+import type { ErrorCode } from '@manilha/protocol';
 
 export class ServerError extends Error {
   constructor(

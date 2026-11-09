@@ -1,8 +1,8 @@
 {
-  "name": "@fdp/protocol",
+  "name": "@manilha/protocol",
   "version": "2.0.0",
   "private": true,
-  "description": "Contratos Zod do Filho da Puta",
+  "description": "Contratos Zod de Manilha",
   "license": "GPL-3.0-or-later",
   "type": "module",
   "exports": {

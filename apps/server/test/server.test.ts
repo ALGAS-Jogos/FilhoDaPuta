@@ -1,5 +1,5 @@
 import type { AddressInfo } from 'node:net';
-import type { ClientMessage, ServerMessage, StateMessage, WelcomeMessage } from '@fdp/protocol';
+import type { ClientMessage, ServerMessage, StateMessage, WelcomeMessage } from '@manilha/protocol';
 import type { FastifyInstance } from 'fastify';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import WebSocket from 'ws';

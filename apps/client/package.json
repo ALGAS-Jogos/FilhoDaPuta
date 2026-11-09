@@ -1,0 +1,24 @@
+{
+  "name": "@manilha/client",
+  "version": "2.0.0",
+  "private": true,
+  "description": "Cliente web de Manilha com Canvas 2D procedural",
+  "license": "GPL-3.0-or-later",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview",
+    "typecheck": "svelte-check --tsconfig ./tsconfig.json"
+  },
+  "dependencies": {
+    "@manilha/protocol": "2.0.0",
+    "svelte": "5.57.3"
+  },
+  "devDependencies": {
+    "@sveltejs/vite-plugin-svelte": "7.3.1",
+    "svelte-check": "4.7.8",
+    "typescript": "5.9.3",
+    "vite": "8.3.7"
+  }
+}

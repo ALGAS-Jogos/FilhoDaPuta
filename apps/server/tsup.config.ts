@@ -8,5 +8,5 @@ export default defineConfig({
   outDir: 'dist',
   clean: true,
   sourcemap: true,
-  noExternal: ['@fdp/engine', '@fdp/protocol'],
+  noExternal: ['@manilha/engine', '@manilha/protocol'],
 });

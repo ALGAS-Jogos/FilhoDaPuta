@@ -1,5 +1,5 @@
 import { resolve } from 'node:path';
-import { ROOM_TTL_MS } from '@fdp/protocol';
+import { ROOM_TTL_MS } from '@manilha/protocol';
 
 export interface AppConfig {
   port: number;
