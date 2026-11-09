@@ -224,8 +224,11 @@ export class Room {
     this.deadline = null;
     this.deadlinePhase = null;
     this.clearTimers();
+    this.players = this.players.filter((player) => player.connected || player.isBot);
+    this.migrateHost();
     this.touch();
     this.broadcast();
+    this.maybeEmpty();
   }
 
   placeBet(seat: number, value: number): void {
@@ -302,6 +305,9 @@ export class Room {
         player.isBot = true;
       }
       this.syncEngineFlags();
+      if (this.state.turnSeat === player.seat || this.state.phase === 'roundEnd') {
+        this.schedule(true);
+      }
       this.migrateHost();
       this.touch();
       this.broadcast();
@@ -378,7 +384,7 @@ export class Room {
       }
       found.socket = null;
       found.connected = false;
-      if (!this.state) {
+      if (!this.state || this.state.phase === 'gameOver') {
         this.spectators = this.spectators.filter((candidate) => candidate.id !== playerId);
       }
       this.touch();
@@ -394,7 +400,7 @@ export class Room {
     player.socket = null;
     player.connected = false;
 
-    if (!this.state) {
+    if (!this.state || this.state.phase === 'gameOver') {
       this.players = this.players.filter((candidate) => candidate.id !== playerId);
       this.migrateHost();
       this.touch();
@@ -405,8 +411,10 @@ export class Room {
 
     this.syncEngineFlags();
     const enginePlayer = this.playerState(player.seat);
-    if (this.state.phase !== 'gameOver' && enginePlayer && !enginePlayer.dead && !player.isBot) {
+    if (enginePlayer && !enginePlayer.dead && !player.isBot) {
       this.startPause(player.seat);
+    } else if (this.paused) {
+      this.refreshVoters();
     }
     this.migrateHost();
     this.touch();
