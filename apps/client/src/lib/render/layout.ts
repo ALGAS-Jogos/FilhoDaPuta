@@ -120,12 +120,35 @@ export function computeLayout(view: StateMessage, width: number, height: number)
     allHands.set(entry.seat, entry.cards);
   }
 
+  const narrow = (k >= 3 && width < 760) || (k >= 4 && width < 1150);
+
   const seats: SeatSlot[] = others.map((player, index) => {
     const angle = Math.PI + ((index + 1) * Math.PI) / (k + 1);
-    const x = clamp(56, width - 56, cx + Math.cos(angle) * rx);
-    const y = clamp(topReserved + 20, cy + ry * 0.55, cy + Math.sin(angle) * ry);
-    const side: SeatSlot['side'] =
-      x < cx - width * 0.16 ? 'left' : x > cx + width * 0.16 ? 'right' : 'top';
+    let x: number;
+    let y: number;
+    let side: SeatSlot['side'];
+
+    if (narrow && k >= 3) {
+      if (index === 0) {
+        x = width * 0.13;
+        y = cy - 10;
+        side = 'left';
+      } else if (index === k - 1) {
+        x = width * 0.87;
+        y = cy - 10;
+        side = 'right';
+      } else {
+        const topCount = k - 2;
+        const position = topCount === 1 ? 0.5 : 0.3 + (0.4 * (index - 1)) / (topCount - 1);
+        x = width * position;
+        y = topReserved + 62;
+        side = 'top';
+      }
+    } else {
+      x = clamp(56, width - 56, cx + Math.cos(angle) * rx);
+      y = clamp(topReserved + 20, cy + ry * 0.55, cy + Math.sin(angle) * ry);
+      side = x < cx - width * 0.16 ? 'left' : x > cx + width * 0.16 ? 'right' : 'top';
+    }
     const revealed = allHands.get(player.seat);
     const count = revealed?.length ?? player.cardCount;
     const step = Math.min(miniW * 0.62, miniW * 0.52);

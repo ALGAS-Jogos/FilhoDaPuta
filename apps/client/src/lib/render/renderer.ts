@@ -347,8 +347,11 @@ export class TableRenderer {
       }
     }
 
-    const labelWidth = Math.min(148, Math.max(92, this.width * 0.18));
-    const labelHeight = 34;
+    const compact = this.width < 980;
+    const labelWidth = compact
+      ? Math.min(96, Math.max(62, this.width * 0.14))
+      : Math.min(148, Math.max(92, this.width * 0.18));
+    const labelHeight = compact ? 30 : 34;
     const labelX = seat.x - labelWidth / 2;
     const labelY = seat.y - labelHeight - 10;
     roundRect(ctx, labelX, labelY, labelWidth, labelHeight, 9);
@@ -365,26 +368,28 @@ export class TableRenderer {
     ctx.stroke();
     ctx.shadowBlur = 0;
 
-    ctx.font = `600 11px ${SANS}`;
+    ctx.font = `600 ${compact ? 10 : 11}px ${SANS}`;
     ctx.textAlign = 'left';
     ctx.textBaseline = 'middle';
     ctx.fillStyle = theme.text;
-    const suffix = player.isBot ? ' · bot' : !player.connected ? ' · off' : '';
+    const suffix = compact ? '' : player.isBot ? ' · bot' : !player.connected ? ' · off' : '';
     const title = fitText(ctx, `${player.name}${suffix}`, labelWidth - 14);
-    ctx.fillText(title, labelX + 7, labelY + 11);
+    ctx.fillText(title, labelX + 7, labelY + (compact ? 9 : 11));
 
-    ctx.font = `500 10px ${SANS}`;
+    ctx.font = `500 ${compact ? 9 : 10}px ${SANS}`;
     ctx.fillStyle = theme.textMuted;
-    const dealer = state.game?.dealerSeat === player.seat ? ' · D' : '';
+    const dealer = state.game?.dealerSeat === player.seat ? (compact ? ' D' : ' · D') : '';
     const status = player.dead
       ? 'morto'
-      : `♥ ${player.lives} · aposta ${player.bet ?? '—'}${dealer}`;
-    ctx.fillText(fitText(ctx, status, labelWidth - 14), labelX + 7, labelY + 24);
+      : compact
+        ? `♥${player.lives} · ${player.bet ?? '—'}${dealer}`
+        : `♥ ${player.lives} · aposta ${player.bet ?? '—'}${dealer}`;
+    ctx.fillText(fitText(ctx, status, labelWidth - 14), labelX + 7, labelY + (compact ? 21 : 24));
 
     if (turn) {
       ctx.fillStyle = theme.accent;
       ctx.beginPath();
-      ctx.arc(labelX + labelWidth - 10, labelY + 10, 3.5, 0, Math.PI * 2);
+      ctx.arc(labelX + labelWidth - 10, labelY + (compact ? 8 : 10), 3.5, 0, Math.PI * 2);
       ctx.fill();
     }
 
